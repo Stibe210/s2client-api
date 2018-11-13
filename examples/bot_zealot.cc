@@ -58,14 +58,17 @@ int main(int argc, char* argv[]) {
     }
     coordinator.SetMultithreaded(true);
     // Add the custom bot, it will control the players.
-    ZealotBot zealot;
+    //ZealotBot zealot;
     MarineBot marine;
-
+    
     coordinator.SetParticipants({
         CreateParticipant(sc2::Race::Terran, &marine),
-        CreateParticipant(sc2::Race::Protoss, &zealot)
+        //CreateParticipant(sc2::Race::Protoss, &zealot),
+        //CreateComputer(sc2::Race::Terran)
+        
+
         });
-    //coordinator.SetRealtime(true);
+    coordinator.SetRealtime(true);
     // Start the game.
     coordinator.LaunchStarcraft();
 

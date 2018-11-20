@@ -12,6 +12,7 @@ private:
     int vzd1odNepriatela;
     int vzd2odNepriatela;
     int vzd3odNepriatela;
+    int* quadrantSafety;
 
 public:
     MarineFeature();
@@ -29,6 +30,8 @@ public:
     int get_vzd2odNepriatela();
     void set_vzd3odNepriatela(float distance);
     int get_vzd3odNepriatela();
+    void set_quadrantSafety(float* safety);
+    int* get_quadrantSafety();
 
     vector<int>* to_array();
 

@@ -11,14 +11,15 @@
 using namespace sc2;
 using namespace std;
 
-MarineBot::MarineBot() : restarts_(0), reward(0), global_reward(0), lastAction(0), poslednySelectnuty(0)
+MarineBot::MarineBot() : restarts_(0), reward(0), global_reward(0), lastAction(0), radiusQuadrant(5)
 {
 	double GAMMA = 0.9;
 	double ALPHA = 0.05;
 	double EPSILON = 0.75;
+
 	mfeature_ = new MarineFeature();
-	state_ = new Stav(new vector<int>(6, 0));///TODO NATVRDO nasraaaaaat com to tu ide
-	ql_ = new QL(state_, 6, 3, new QInit());
+	state_ = new Stav(new vector<int>(9, 0));///TODO NATVRDO nasraaaaaat com to tu ide - zaujimavy koment
+	ql_ = new QL(state_, 9, 4, new QInit());
 	ql_->SetHyperparemeters(ALPHA, GAMMA, EPSILON);
     //srand(time(nullptr)); //??co je toto za kod?
 	
@@ -28,34 +29,21 @@ void MarineBot::OnGameStart()
 {
     std::cout << "Starting a new game (" << restarts_ << " restarts)" << std::endl;
 	auto units = Observation()->GetUnits(sc2::Unit::Alliance::Self);
-	tagPrveho = units[0]->tag;
-	GetState();	
+	SetFeatures(units[0]);	
 }
 
 void MarineBot::OnStep()
-{
-	
+{	
     uint32_t game_loop = Observation()->GetGameLoop();
     auto units = Observation()->GetUnits(Unit::Alliance::Self);
-    if (units.empty())
-    {
-        return;
-    }
+    if (units.empty()) return;    
 	auto enemy = Observation()->GetUnits(Unit::Enemy);
 	if (enemy.empty()) return;
-	if (units.size() == 1)
-		poslednySelectnuty = 0;
-	else {
-		poslednySelectnuty++;
-		if (poslednySelectnuty > units.size() - 1)
-			poslednySelectnuty = 0;
-	}
-	auto unit = units[poslednySelectnuty];
-
-	Debug()->DebugMoveCamera(unit->pos);
-        Debug()->SendDebug();
-
-
+	
+	for (auto unit : units)
+	{	
+		Debug()->DebugMoveCamera(unit->pos);
+		Debug()->SendDebug();
 		/*float pomocna = Observation()->GetScore().score_details.total_damage_dealt.life;
 		pomocna += Observation()->GetScore().score_details.total_damage_dealt.shields;
 		pomocna += Observation()->GetScore().score_details.total_damage_dealt.energy;
@@ -64,43 +52,43 @@ void MarineBot::OnStep()
 		*/
 		reward = 0;
 		ql_->Learn(reward, new Stav(mfeature_->to_array()), lastAction, false);//TODO Pozor momentalne to je spravene na tu minihru s dierou ktoru ma obchadzat (natvrdo bohuzial) takze velkosti stavou nesedia
-
-		if (units.empty())
-		{
-			//this->Vypis(" Nemame jednotky.");
-			return;//ak nemame vojakov step sa nedeje (padlo)
-		}
-		GetState();
-		srand(time(NULL));
+		
+		SetFeatures(unit);
+		
+		srand(time(NULL)); // CO TO TU ROBI????
 		int akcia = ql_->ChooseAction(false, this->state_);///TODO tu mu posli stav
-		if (akcia == 0)
+		
+		switch (akcia)
 		{
+		case 0:
 			//Vypis("  Strategia USTUP");
 			step = 30;
 			this->StrategiaUstup(unit);
-		}
-		else if (akcia == 1)
-		{
+			break;
+		case 1:
 			//Vypis("  Strategia ZMEN TARGET");
 			step = 100;
 			this->StrategiaDopredu(unit);
-		}
-		else
-		{
+			break;
+		case 2:
 			//Vypis("  Strategia UTOC");
 			step = 100;
 			this->StrategiaUtoc(unit);
+			break;
+		case 3:
+			//Vypis("  Strategia POHYB DO KVADRANTU");
+			step = 30;
+			this->AkciaPohybKvadrant(unit);
+			break;
+		default:
+			break;
 		}
-		lastAction = akcia;
-	
-   
-	
-
+		lastAction = akcia;		
+	}
 }
 
 void MarineBot::OnGameEnd()
 {
-
 	++restarts_;
 	if (restarts_ % 10 == 0)
 	{
@@ -136,6 +124,9 @@ void MarineBot::SaveQL()
 	this->ql_->Save("marine_saveQL.csv");
 }
 
+/**
+ * Akcia ustupu od najblizsej jednotky.
+ */
 void MarineBot::StrategiaUstup(const Unit* unit)
 {
     Unit* closest_unit = nullptr;
@@ -189,6 +180,9 @@ void MarineBot::StrategiaUstup(const Unit* unit)
     }
 }
 
+/**
+ * Pohyb dopredu, teda k najblizsiemu nepriatelovi.
+ */
 void MarineBot::StrategiaDopredu(const Unit* unit)
 {
     Unit* closest_unit = nullptr;
@@ -196,6 +190,9 @@ void MarineBot::StrategiaDopredu(const Unit* unit)
     Actions()->UnitCommand(unit, ABILITY_ID::ATTACK, closest_unit);
 }
 
+/**
+ * Akcia na utok.
+ */
 void MarineBot::StrategiaUtoc(const Unit* unit)
 {
     if (!unit->orders.empty()) {
@@ -204,9 +201,99 @@ void MarineBot::StrategiaUtoc(const Unit* unit)
             Actions()->UnitCommand(unit, ABILITY_ID::ATTACK, unit->pos);
         }
     }
-
 }
 
+/*
+ * Akcia pohybu.
+ * Premiestni daneho marinaka do stredu kvadrantu, ktory ma najvyssiu hodnotu.
+ */
+void MarineBot::AkciaPohybKvadrant(const Unit* unit)
+{
+	float* quadrant = GetFeatureQuadrant(unit);
+	float max = FLT_MIN;
+	int index = -1;
+	for (int i = 0; i < 4; i++)
+	{
+		if (quadrant[i] >= max)
+		{
+			max = quadrant[i];
+			index = i;
+		}
+	}
+	float x = 0;
+	float y = 0;
+	switch (index)
+	{
+	case 0:
+		x = radiusQuadrant / 2;
+		y = -radiusQuadrant / 2;
+		break;
+	case 1:
+		x = radiusQuadrant / 2;
+		y = radiusQuadrant / 2;
+		break;
+	case 2:
+		x = -radiusQuadrant / 2;
+		y = radiusQuadrant / 2;
+		break;
+	case 3:
+		x = -radiusQuadrant / 2;
+		y = -radiusQuadrant / 2;
+		break;
+	default:
+		break;
+	}
+	Actions()->UnitCommand(unit, ABILITY_ID::MOVE, *new Point2D(unit->pos.x+x, unit->pos.y+y), false);
+}
+
+/*
+ * Metoda vracia featuru kvadrantov, teda pre kazdy kvadrant hodnota "bezpecnosti" - cim vyssia, tym lepsia.
+ */
+float* MarineBot::GetFeatureQuadrant(const Unit* unit)
+{	
+	Units alliedUnits = Observation()->GetUnits(Unit::Ally);
+	Units enemyUnits = Observation()->GetUnits(Unit::Enemy);
+	float *quadrant = new float[4];
+	for (auto alliedUnit : alliedUnits)
+	{
+		float distance = sqrt(pow(abs(alliedUnit->pos.x - unit->pos.x), 2.0) + pow(abs(alliedUnit->pos.y - unit->pos.y), 2.0));
+		if (distance <= radiusQuadrant / 2)
+			quadrant[this->GetQuadrantIndex(unit, alliedUnit)] += (radiusQuadrant / 2 -distance) / radiusQuadrant / 2;
+	}
+	for (auto enemyUnit : enemyUnits)
+	{
+		float distance = sqrt(pow(abs(enemyUnit->pos.x - unit->pos.x), 2.0) + pow(abs(enemyUnit->pos.y - unit->pos.y), 2.0));
+		if (distance >= radiusQuadrant / 2)
+			quadrant[this->GetQuadrantIndex(unit, enemyUnit)] -= (radiusQuadrant / 2 -distance) / radiusQuadrant / 2;
+	}
+	return quadrant;
+}
+
+/*
+ * Vrati index kvadrantu (1. kvadrant ma index 0)
+ */
+int MarineBot::GetQuadrantIndex(const Unit* middle, const Unit* unit)
+{
+	// 4 | 1
+	// -----
+	// 3 | 2
+	int index = -1;
+	if (middle->pos.x - unit->pos.x >= 0)
+		if (middle->pos.y - unit->pos.y >= 0)
+			index = 3;
+		else
+			index = 2;
+	else
+		if (middle->pos.y - unit->pos.y >= 0)
+			index = 0;
+		else
+			index = 1;
+	return index;
+}
+
+/*
+ * Funkcia vracia vzdialenost od najblizsieho nepriatela a taktiez ho vlozi na adresu premennej closest_unit.
+ */
 float MarineBot::GetClosestEnemy(const Unit* source_unit, Unit*& closest_unit)
 {
     auto enemy_units = Observation()->GetUnits(Unit::Enemy);
@@ -223,7 +310,10 @@ float MarineBot::GetClosestEnemy(const Unit* source_unit, Unit*& closest_unit)
     return distance;
 }
 
-void MarineBot::GetState() const
+/*
+ * Nastavi vsetky features danej jednotky.
+ */
+void MarineBot::SetFeatures(const Unit* unit)
 {
 	float totalHealth = 0.0;
 	float maxHealth = 0.0;
@@ -236,13 +326,13 @@ void MarineBot::GetState() const
 		if (enemy_units.size() != 0)
 			current_distance = Distance2D(enemy_units[0]->pos, unit->pos);
 		float hpPerc = unit->health / unit->health_max;
-		if (unit->tag == tagPrveho) {
 			mfeature_->set_hp1(hpPerc);
 			mfeature_->set_vzd1odNepriatela(current_distance);
-		}
-		else {
+		
+		
 			mfeature_->set_hp2(hpPerc);
-			mfeature_->set_vzd2odNepriatela(current_distance);
-		}		
+		mfeature_->set_vzd2odNepriatela(current_distance);
+		
 	}
+	mfeature_->set_quadrantSafety(GetFeatureQuadrant(unit));
 }

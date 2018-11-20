@@ -3,6 +3,7 @@
 
 MarineFeature::MarineFeature() : hp1(0), hp2(0), hp3(0), vzd1odNepriatela(0), vzd2odNepriatela(0), vzd3odNepriatela(0)
 {
+	quadrantSafety = new int[4] {0, 0, 0, 0};
 }
 
 MarineFeature::~MarineFeature()
@@ -219,6 +220,40 @@ int MarineFeature::get_vzd3odNepriatela()
 	return vzd3odNepriatela;
 }
 
+void MarineFeature::set_quadrantSafety(float* safety)
+{
+	//napad: najst min a max hodnotu a vsetky hodnoty vcucnut medzi ne a rozdelit na 4 casti (normalizacia sa to vola?).
+	float min = FLT_MAX;
+	float max = FLT_MIN;	
+	for (int i = 0; i < 4; i++)
+	{
+		float sft = safety[i];
+		if (sft >= max)
+			max = sft;
+		if (sft <= min)
+			min = sft;
+	}
+	for (int i = 0; i < 4; i++)
+	{
+		float sft = (safety[i]-min)/max;
+		if (sft <= 0.125)
+			quadrantSafety[i] = 0;
+		else if (sft <= 0.375)
+			quadrantSafety[i] = 1;
+		else if (sft <= 0.625)
+			quadrantSafety[i] = 2;
+		else if (sft <= 0.875)
+			quadrantSafety[i] = 3;
+		else
+			quadrantSafety[i] = 4;
+	}
+}
+
+int* MarineFeature::get_quadrantSafety()
+{
+	return quadrantSafety;
+}
+
 
 vector<int>* MarineFeature::to_array()
 {
@@ -230,6 +265,10 @@ vector<int>* MarineFeature::to_array()
     (*pole)[3] = vzd1odNepriatela;
     (*pole)[4] = vzd2odNepriatela;
 	(*pole)[5] = vzd3odNepriatela;
+	(*pole)[6] = quadrantSafety[0];
+	(*pole)[7] = quadrantSafety[1];
+	(*pole)[8] = quadrantSafety[2];
+	(*pole)[9] = quadrantSafety[3];
     return pole;
 }
 

@@ -7,7 +7,6 @@
 
 class MarineBot : public sc2::Agent
 {
-    int tagPrveho;
     uint32_t restarts_;
     MarineFeature* mfeature_;
     QL* ql_;
@@ -15,12 +14,15 @@ class MarineBot : public sc2::Agent
 
     float reward;
     float global_reward;
+    const float radiusQuadrant; //velkost radiusu kvadrantu
     int lastAction;
     int step;
-    int poslednySelectnuty;
 
-    void GetState() const;
+    void SetFeatures(const sc2::Unit*);
     void SaveQL();
+
+    int GetQuadrantIndex(const sc2::Unit*, const sc2::Unit*);
+    float* GetFeatureQuadrant(const sc2::Unit*);
 public:
     MarineBot();
     void OnGameStart() override final;
@@ -29,5 +31,6 @@ public:
     void StrategiaUstup(const sc2::Unit*);
     void StrategiaDopredu(const sc2::Unit*);
     void StrategiaUtoc(const sc2::Unit*);
+    void AkciaPohybKvadrant(const sc2::Unit*);
     float GetClosestEnemy(const sc2::Unit*, sc2::Unit*&);
 };

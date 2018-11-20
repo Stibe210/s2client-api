@@ -49,12 +49,16 @@ example_project(proxy "proxy.cc")
 example_project(save_load "save_load.cc")
 example_project(minihraJama "minihraJama.cc" qlbot)
 target_link_libraries(minihraJama qlbot)
+
 example_project(bot_zealot "bot_zealot.cc" qlbot sc2lib)
 target_link_libraries(bot_zealot qlbot sc2lib)
+
 example_project(bot_marine "bot_marine.cc" qlbot sc2lib)
 target_link_libraries(bot_marine qlbot sc2lib)
-example_project(bot_marineVSzealot "bot_,aromeVSzealot.cc" qlbot sc2lib)
+
+example_project(bot_marineVSzealot "bot_marineVSzealot.cc" qlbot sc2lib)
 target_link_libraries(bot_marineVSzealot qlbot sc2lib)
+
 # example_project(bot_mp_ipv6 "bot_mp_ipv6.cc")
 
 if (NOT APPLE)

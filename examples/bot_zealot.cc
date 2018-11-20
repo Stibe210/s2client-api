@@ -63,7 +63,7 @@ int main(int argc, char* argv[]) {
 
     FooBot human;
     coordinator.SetParticipants({
-        CreateComputer(sc2::Race::Terran),
+        CreateComputer(sc2::Race::Terran), //aj ked je to takto, tak hrac dostane kontrolu "player 1" teda marinakov
         CreateParticipant(sc2::Race::Protoss, &zealot)
         });
     //coordinator.SetRealtime(true);

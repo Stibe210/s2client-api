@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <stdint.h>
+#include "s2clientprotocol/sc2api.pb.h"
 
 namespace sc2 {
 

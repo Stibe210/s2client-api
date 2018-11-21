@@ -61,7 +61,7 @@ void ZealotBot::OnGameStart()
     }
     hp = units[0]->health;
     shield = units[0]->shield;
-    Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::PROTOSS_ZEALOT, units[0]->pos, Observation()->GetPlayerID());
+    //Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::PROTOSS_ZEALOT, units[0]->pos, Observation()->GetPlayerID());
     Debug()->SendDebug();
 }
 

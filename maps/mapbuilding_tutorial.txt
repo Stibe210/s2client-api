@@ -1,0 +1,3 @@
+1. Treba nastavit hracov v Map - player properties - tam nastavit hracov (fungovalo, ak boli ako useri).
+2. Treba nastavit triggre na vyhru, inak sa mapa po zapnuti da ako TIED. (win pre obe strany)
+3. Pridat POINTY - pre spawnovanie? pripadne starting pointy (pozor, aby sa nespawnla zakladna a jednotky).

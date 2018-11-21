@@ -41,5 +41,7 @@ const char* kMapEmptyLong        = "Test/EmptyLong.SC2Map";
 const char* kMapEmptyTall        = "Test/EmptyTall.SC2Map";
 const char* kMapMarineMicro      = "Example/MarineMicro.SC2Map";
 const char* kMapTest3            = "Melee/test3.SC2Map";
+const char* kMapSmallMap = "MarineVsZealot/smallmap.SC2Map";
+const char* kMapSmallMap3v1 = "MarineVsZealot/smallmap_3m_vs_1z.SC2Map";
 
 }

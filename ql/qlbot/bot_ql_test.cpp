@@ -7,35 +7,64 @@
 #include "qllib/Stav.h"
 #include "../../tests/feature_layers_shared.h"
 #include "qlbot/bot_ql_test.h"
+#include <fstream>
 
 
-QlBot::QlBot(int width, int height, float square_size) :
+QlBot::QlBot(int width, int height, float square_size, bool is_learning) :
     restarts_(0), pi(atan(1) * 4)
 {
     //todo: parametricke prepinanie ucenia a cesta k csv s q hodnotami
     srand(time(NULL));
+    buffer_pointer = buffer;
+    buffer_size = 0;
+
+
     stepNum = 0;
     GAMMA = 0.9;
     ALPHA = 0.1;
     EPSILON = 0.7;
+
     this->width = width;
     this->height = height;
+    this->is_learning = is_learning;
+    this->square_size = square_size;
     x = 0;
     y = 0;
-    this->square_size = square_size;
+
     zstav_ = new TestState();
     state_ = new Stav(new vector<int>(2, 0));//TODO zatial napevno .. asi odstranim z parametra take a nejako to oriesim v kniznici
     ql_ = new QL(state_, 2, 4, new QInitZealot());
     ql_->SetHyperparemeters(ALPHA, GAMMA, EPSILON);
+
+    ql_path = "minihraJamy_ql_w_" + to_string(this->width) + "_h_" + to_string(this->height) + "_l_" + to_string(this->is_learning) +".csv";
+    res_path = "minihraJamy_res_w_" + to_string(this->width) + "_h_" + to_string(this->height) + "_l_" + to_string(this->is_learning) + ".csv";
     try
     {
-        ql_->Load("minihraJamy.csv");
+       
+        
+        ql_->Load(ql_path);
         printf("NACITANE");
+        try
+        {
+            this->Load();
+        }
+        catch(const std::exception& e)
+        {
+            win_count = 0;
+            game_count = 0;
+            win_percentage = 0;
+        }
     }
     catch (const std::exception& e)
     {
+        win_count = 0;
+        game_count = 0;
+        win_percentage = 0;
         printf("NENACITANE -> uci sa od zaciatku");
+       
     }
+
+    
 
     time(&lastUpdate);
 }
@@ -75,7 +104,7 @@ void QlBot::OnStep()
     stepNum++;
     if (stepNum % 200 == 0)
     {
-        this->ql_->Save("minihraJamy.csv");
+        this->ql_->Save(ql_path);
         printf("ulozene\n");
 
         //meranie casu medzi ulozeniami
@@ -139,13 +168,17 @@ void QlBot::OnStep()
             if (x == width - 1)
             {
                 reward = 1;
+                win_count++;
             }
             else
             {
                 reward = -10;
             }
-            global_reward += reward;
-            reward_now += reward - 0.001*reward_now;
+            game_count++;
+            win_percentage = static_cast<double>(win_count) / static_cast<double>(game_count);
+
+            
+
             x = 0;
             y = 0;
             zstav_->set_x(y);
@@ -156,6 +189,25 @@ void QlBot::OnStep()
             Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::PROTOSS_ZEALOT, *start_point, Observation()->GetPlayerID());
             Debug()->SendDebug();
             ql_->Learn(reward, new Stav(zstav_->to_array()), lastAction, false);
+            global_reward += reward;
+            reward_now += reward - 0.001*reward_now;
+
+            (*buffer_pointer).reward = reward;
+            (*buffer_pointer).reward_now = reward_now;
+            (*buffer_pointer).game_count = game_count;
+            (*buffer_pointer).win_count = win_count;
+            (*buffer_pointer).win_percentage = win_percentage;
+            //cout << "game" << game_count << endl;
+            buffer_pointer++;
+            buffer_size++;
+            if (buffer_size > 19)
+            {
+                this->Save();
+                buffer_size = 0;
+                buffer_pointer = buffer;
+            }
+
+            printf("score %6.3f %6.3f\n", global_reward, reward_now);
             return;
         }
         ql_->Learn(reward, new Stav(zstav_->to_array()), lastAction, false);
@@ -167,7 +219,7 @@ void QlBot::OnStep()
             return;//ak nemame vojakov step sa nedeje (padlo)
         }
 
-        int akcia = ql_->ChooseAction(false, new Stav(zstav_->to_array()));
+        int akcia = ql_->ChooseAction(this->is_learning, new Stav(zstav_->to_array()));
         sc2::Units jednotkyNepriatelov = Observation()->GetUnits(sc2::Unit::Enemy);
         /*cout << "x:" << zstav_->get_x() << " y: " << zstav_->get_y() << endl;*/
         int x_new = x, y_new = y;
@@ -198,7 +250,8 @@ void QlBot::OnStep()
         y = y_new;
         zstav_->set_x(y);
         zstav_->set_y(x);
-
+        global_reward += reward;
+        reward_now += reward - 0.001*reward_now;
         Actions()->UnitCommand(units[0], sc2::ABILITY_ID::MOVE, *new sc2::Point2D(start_point->x + x * square_size, start_point->y - y * square_size), false);
         printf("\nscore %6.3f %6.3f\n", global_reward, reward_now);
 
@@ -311,6 +364,91 @@ void QlBot::Triangulate(float speed, float degree, float& x, float& y)
 {
     x = cos(degree * pi / 180) * speed;
     y = sin(degree * pi / 180) * speed;
+}
+
+void QlBot::Load()
+{
+    //todo toto nefungiruje :D
+    bool prvyKoniec = false;
+    ifstream file;
+    file.open(res_path);
+    string line;
+    if (file.is_open())
+    {
+        //Got to the last character before EOF
+        file.seekg(-1, std::ios_base::end);
+        if (file.peek() == '\n')
+        {
+            //Start searching for \n occurrences
+            file.seekg(-1, std::ios_base::cur);
+            int i = file.tellg();
+            for (i; i > 0; i--)
+            {
+                if (file.peek() == '\n')
+                {
+                    //Found
+                    file.get();
+                    break;
+                }
+                //Move one character back
+                file.seekg(i, std::ios_base::beg);
+            }
+        }
+        std::string lastline;
+        getline(file, lastline);
+        
+        string buff{ "" };
+        vector<string> tokens;
+
+        for (auto n : lastline)
+        {
+            if (n != ',') buff += n; else
+                if (n == ',' && buff != "") { tokens.push_back(buff); buff = ""; }
+        }
+        if (buff != "") tokens.push_back(buff);
+
+
+        reward_now = stof(tokens.at(1));
+        win_count = stoi(tokens.at(2));
+        game_count = stoi(tokens.at(3));
+        win_percentage = stod(tokens.at(4));
+       /* cout << reward_now << endl;
+        cout << win_count << endl;
+        cout << game_count << endl;
+        cout << win_percentage << endl;*/
+        
+
+        file.close();
+        
+
+    }
+}
+
+void QlBot::Save()
+{
+    ofstream file;
+    std::ifstream infile(res_path);
+    
+    if (infile.good())
+    {
+        file.open(res_path, std::ios_base::app);
+    } else
+    {
+        file.open(res_path, std::ios_base::app);
+        file << "sep=, \n";
+    }
+    string pomocna;
+    file << pomocna;
+    auto iterator = buffer;
+    for (int i = 0; i < buffer_size ; i++)
+    {
+        ResultRecord result = *iterator;
+        pomocna = to_string(result.reward) + "," + to_string(result.reward_now) + "," + to_string(result.win_count) + "," + to_string(result.game_count) + "," + to_string(result.win_percentage) + "," + "\n";
+        file << pomocna;
+        iterator++;
+    }
+
+    file.close();
 }
 
 

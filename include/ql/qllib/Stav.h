@@ -39,8 +39,8 @@ struct CompareStav
 		vector<int> pst1 = *stav1->dajStavConst();
 		const vector<int> pst2 = *stav2->dajStavConst();
 		if (pst1.size() != pst2.size()) {
-            printf("Stavy sa nezhoduju v pocte dimenzii.");//bo vinimka dajako neukazuje text abo co 
-			throw std::invalid_argument("Stavy sa nezhoduju v pocte dimenzii.");
+            printf("Stavy sa nezhoduju v pocte dimenzii.header1print");//bo vinimka dajako neukazuje text abo co 
+			throw std::invalid_argument("Stavy sa nezhoduju v pocte dimenzii.header1");
 		}
 		for (size_t i = 0; i < pst1.size(); i++)
 		{
@@ -62,7 +62,7 @@ struct CompareStav
 		vector<int> pst1 = *stav1.dajStavConst();
 		const vector<int> pst2 = *stav2.dajStavConst();
 		if (pst1.size() != pst2.size()) {
-			throw std::invalid_argument("Stavy sa nezhoduju v pocte dimenzii.");
+			throw std::invalid_argument("Stavy sa nezhoduju v pocte dimenzii.header2");
 		}
 		for (size_t i = 0; i < pst1.size(); i++)
 		{

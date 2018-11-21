@@ -59,10 +59,11 @@ int main(int argc, char* argv[]) {
     coordinator.SetMultithreaded(true);
     // Add the custom bot, it will control the players.
     ZealotBot zealot;
-    MarineBot marine;
+    //MarineBot marine;
 
+    FooBot human;
     coordinator.SetParticipants({
-        CreateParticipant(sc2::Race::Terran, &marine),
+        CreateComputer(sc2::Race::Terran), //aj ked je to takto, tak hrac dostane kontrolu "player 1" teda marinakov
         CreateParticipant(sc2::Race::Protoss, &zealot)
         });
     //coordinator.SetRealtime(true);
@@ -72,7 +73,7 @@ int main(int argc, char* argv[]) {
     // Step forward the game simulation.
     bool do_break = false;
     while (!do_break) {
-        coordinator.StartGame(sc2::kMapTest3);
+        coordinator.StartGame(sc2::kMapSmallMap);
         while (coordinator.Update() && !do_break) {
             if (sc2::PollKeyPress()) {
                 std::cout << "Koncim cyklus" << std::endl;

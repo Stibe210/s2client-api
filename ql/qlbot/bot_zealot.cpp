@@ -29,7 +29,7 @@ ZealotBot::ZealotBot() :
     //preco to tu nebolo ...
     ql_->Load("saveQL.csv");
     printf("Nacitane snad ");
-    //-----
+    //---
 }
 
 void ZealotBot::Vypis(std::string sprava)

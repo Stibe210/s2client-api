@@ -26,6 +26,10 @@ ZealotBot::ZealotBot() :
     state_ = new Stav(new vector<int>(8, 0));///TODO NATVRDO nasraaaaaat com to tu ide
     ql_ = new QL(state_, 8,3, new QInitZealot());
     ql_->SetHyperparemeters(ALPHA, GAMMA, EPSILON);
+    //preco to tu nebolo ...
+    ql_->Load("saveQL.csv");
+    printf("Nacitane snad ");
+    //-----
 }
 
 void ZealotBot::Vypis(std::string sprava)
@@ -190,7 +194,7 @@ void ZealotBot::OnGameEnd()
         this->UlozNaucene();
         //Priebezne uklada to je asi len docasne alebo sa potom zvacsi interval
         //ak by padlo a podobne
-        cout << "Ukladam." << endl;
+        cout << "\n Ukladam.\n" << endl;
     }
     //cout << Observation()->GetUnitTypeData().at(static_cast<int>(sc2::UNIT_TYPEID::PROTOSS_ZEALOT)).l;
 

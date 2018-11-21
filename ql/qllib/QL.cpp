@@ -230,7 +230,6 @@ void QL::Load(string path)
         }
         stavyLoad->insert(make_pair(new Stav(stav), new QStav(qHodnoty)));
         //stavy.insert(make_pair(Stav(stav), QStav(qHodnoty)));
-        int i = 5;
     }
     file.close();
 

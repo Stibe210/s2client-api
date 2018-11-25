@@ -18,8 +18,8 @@ MarineBot::MarineBot() : restarts_(0), reward(0), global_reward(0), lastAction(0
 	double EPSILON = 0.75;
 
 	mfeature_ = new MarineFeature();
-	state_ = new Stav(new vector<int>(9, 0));///TODO NATVRDO nasraaaaaat com to tu ide - zaujimavy koment
-	ql_ = new QL(state_, 9, 4, new QInit());
+	state_ = new Stav(new vector<int>(10, 0));///TODO NATVRDO nasraaaaaat com to tu ide - zaujimavy koment
+	ql_ = new QL(state_, 10, 4, new QInit());
 	ql_->SetHyperparemeters(ALPHA, GAMMA, EPSILON);
     //srand(time(nullptr)); //??co je toto za kod?
 	

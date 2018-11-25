@@ -258,7 +258,7 @@ int* MarineFeature::get_quadrantSafety()
 vector<int>* MarineFeature::to_array()
 {
     vector<int>* pole = new vector<int>();
-    pole->resize(6);
+    pole->resize(10);
     (*pole)[0] = hp1;
     (*pole)[1] = hp2;
 	(*pole)[2] = hp3;

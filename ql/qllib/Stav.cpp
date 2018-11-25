@@ -47,7 +47,7 @@ bool Stav::operator< (const Stav stav2)
 	vector<int> pst1 = *stav;
 	const vector<int> pst2 = *stav2.dajStavConst();
 	if (pst1.size() != pst2.size()) {
-		throw std::invalid_argument("Stavy sa nezhoduju v pocte dimenzii.");
+		throw std::invalid_argument("Stavy sa nezhoduju v pocte dimenzii.cpp1");
 	}
 	for (size_t i = 0; i < pst1.size(); i++)
 	{
@@ -68,7 +68,7 @@ bool Stav::operator() (const Stav& stav1, const Stav& stav2) const {
 	vector<int> pst1 = *stav1.dajStavConst();
 	const vector<int> pst2 = *stav2.dajStavConst();
 	if (pst1.size() != pst2.size()) {
-		throw std::invalid_argument("Stavy sa nezhoduju v pocte dimenzii.");
+		throw std::invalid_argument("Stavy sa nezhoduju v pocte dimenzii.cpp2");
 	}
 	for (size_t i = 0; i < pst1.size(); i++)
 	{

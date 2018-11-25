@@ -3,52 +3,8 @@
 #include "sc2utils/sc2_manage_process.h"
 
 #include <iostream>
-#include "qlbot/bot_zealot.h"
 #include "qlbot/bot_marine.h"
-#include "qlbot/bot_ql_test.h"
 
-class Human : public sc2::Agent {
-
-
-};
-
-class FooBot : public sc2::Agent {
-public:
-    uint32_t restarts_;
-
-    FooBot() :
-        restarts_(0) {
-    }
-
-    virtual void OnGameStart() final {
-        std::cout << "Starting a new game (" << restarts_ << " restarts)" << std::endl;
-
-    };
-
-    virtual void OnStep() final {
-        uint32_t game_loop = Observation()->GetGameLoop();
-
-        /*if (game_loop % 100 == 0) {
-        sc2::Units units = Observation()->GetUnits(sc2::Unit::Alliance::Self);
-        for (auto& it_unit : units) {
-        sc2::Point2D target = sc2::FindRandomLocation(Observation()->GetGameInfo());
-        Actions()->UnitCommand(it_unit, sc2::ABILITY_ID::ATTACK, target);
-        }
-        sc2::Units units = Observation()->GetUnits(sc2::Unit::Alliance::Self);
-        for (auto& it_unit : units) {
-        sc2::Point2D target = sc2::FindRandomLocation(Observation()->GetGameInfo());
-        Actions()->UnitCommand(it_unit, sc2::ABILITY_ID::SMART, target);
-        }
-        }*/
-    };
-
-    virtual void OnGameEnd() final {
-        ++restarts_;
-        std::cout << "Game ended after: " << Observation()->GetGameLoop() << " loops " << std::endl;
-    };
-
-private:
-};
 
 //*************************************************************************************************
 int main(int argc, char* argv[]) {
@@ -72,7 +28,7 @@ int main(int argc, char* argv[]) {
     // Step forward the game simulation.
     bool do_break = false;
     while (!do_break) {
-        coordinator.StartGame(sc2::kMapTest3);
+        coordinator.StartGame(sc2::kMapSmallMap);
         while (coordinator.Update() && !do_break) {
             if (sc2::PollKeyPress()) {
                 std::cout << "Koncim cyklus" << std::endl;

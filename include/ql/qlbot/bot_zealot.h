@@ -25,8 +25,8 @@ class ZealotBot : public sc2::Agent
     ZealotState* zstav_;
     QL* ql_;
     Stav* state_;
-    void GetState(sc2::Unit unit);
-    void Triangulate(float speed, float degree, float& x, float& y);
+    void get_state(const sc2::Unit& unit) const;
+    void triangulate(float speed, float degree, float& x, float& y) const;
 
 public:
     ZealotBot(int count);

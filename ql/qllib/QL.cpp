@@ -11,28 +11,7 @@
 
 using namespace std;
 
-Stav* zaciatocnyStav;
-Stav* minulyStav;
-int minulaAkcia;
-
-int algaritmus = 1; //0 sarsa 1 q learning
-
-int pocetAkcii;//2 stavy -> 0-1 .. magic numbers mozno prerobit na enum ale boh vie ako to tu vsetko funguje :D :D 
-int pocetFeatur;
-
-float GAMMA = 0.9;//zlava
-float EPSILONx1000 = 0.75*1000;//kolko ide random
-float ALPHA = 0.05;//learning rate
-float zmenaALPHA = 1;// 0.9999;
-float zmenaEPSILON = 1;// 0.999;
-QInit* qInit = nullptr;
-
-
-
-
-//QL::QStav stav;
-std::map<Stav*, QL::QStav*, CompareStav>* stavy = new map <Stav*, QL::QStav*, CompareStav>();
-
+//std::map<Stav*, QL::QStav*, CompareStav>* stavy = new map <Stav*, QL::QStav*, CompareStav>();
 
 QL::QL(Stav* stav, int pocFeatur, int pocAkcii,QInit* qin)
 {
@@ -57,7 +36,7 @@ QL::~QL()
 }
 
 void ZmenAlgaritmus(int algarit) {
-    algaritmus = algarit;
+    //algaritmus = algarit;
 }
 
 int QL::DajPocetUceni()
@@ -263,9 +242,9 @@ void QL::Load(string path)
         {
             int a = 5;
         }*/
-		qHodnoty = new vector<float>();//new int[pocetAkcii];
+        qHodnoty; //= new vector<float>();//new int[pocetAkcii];
 		qHodnoty->resize(pocetAkcii);
-        
+        cout << "akcie" << pocetAkcii << endl;
         if (qInicialization == nullptr) {
             //zmeni q hodnoty na 0 bo c++ ta nwm :D :D 
             for (int i = 0; i < pocetAkcii; i++)

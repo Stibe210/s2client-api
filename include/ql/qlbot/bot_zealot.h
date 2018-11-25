@@ -20,14 +20,16 @@ class ZealotBot : public sc2::Agent
     int lastAction;
     float reward;
     float global_reward;
+    int start_count;
     int step;
     ZealotState* zstav_;
     QL* ql_;
     Stav* state_;
-    void GetState() const;
+    void GetState(sc2::Unit unit);
     void Triangulate(float speed, float degree, float& x, float& y);
+
 public:
-    ZealotBot();
+    ZealotBot(int count);
     void Vypis(std::string);
     void OnGameStart() override final;
     void OnStep() override final;

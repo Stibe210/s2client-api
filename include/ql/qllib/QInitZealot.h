@@ -1,5 +1,5 @@
 #pragma once
-#include "qllib/QInit.h"
+#include "QInit.h"
 
 class QInitZealot: public QInit
 {

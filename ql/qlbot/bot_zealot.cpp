@@ -15,8 +15,8 @@
 #include <cfloat>
 
 
-ZealotBot::ZealotBot() :
-    restarts_(0), dmg(0), hp(0), shield(0), jeVypis(true), lastAction(0), reward(0), global_reward(0), step(100), pi(atan(1) * 4)
+ZealotBot::ZealotBot(int count) :
+    restarts_(0), dmg(0), hp(0), shield(0), jeVypis(true), lastAction(0), reward(0), global_reward(0), step(100), pi(atan(1) * 4), start_count(count)
 {
     //TODO: upravit bota pre hyperparametre epsilon a alfa (vyber nahodneho stavu a learning rate)
     GAMMA = 0.9;
@@ -40,13 +40,14 @@ void ZealotBot::OnGameStart()
 {
 
     std::cout << "Starting a new game (" << restarts_ << " restarts)" << std::endl;
-    GetState();
+    
     dmg = Observation()->GetScore().score_details.total_damage_dealt.life;
     dmg += Observation()->GetScore().score_details.total_damage_dealt.shields;
     dmg += Observation()->GetScore().score_details.total_damage_dealt.energy;
     reward = dmg;
     global_reward = reward;
     sc2::Units units = Observation()->GetUnits(sc2::Unit::Alliance::Self);
+    
     //cout << Observation()->GetUnitTypeData().at(static_cast<int>(sc2::UNIT_TYPEID::PROTOSS_ZEALOT)).weapons.at(0).damage_ << endl;
     //cout << Observation()->GetUnitTypeData().at(static_cast<int>(sc2::UNIT_TYPEID::PROTOSS_ZEALOT)).movement_speed << endl;
     //cout << Observation()->GetUnitTypeData().at(static_cast<int>(sc2::UNIT_TYPEID::TERRAN_MARINE)).movement_speed << endl;
@@ -55,9 +56,12 @@ void ZealotBot::OnGameStart()
     {
         return;
     }
+    GetState(*units[0]);
+    for (auto i = 0; i < start_count; i++)
+        Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::PROTOSS_ZEALOT, units[0]->pos, Observation()->GetPlayerID());
     hp = units[0]->health;
     shield = units[0]->shield;
-    Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::PROTOSS_ZEALOT, units[0]->pos, Observation()->GetPlayerID());
+    
     Debug()->SendDebug();
 }
 
@@ -93,36 +97,39 @@ void ZealotBot::OnStep()
             reward += shield - units[0]->shield;
         }
         */
-        ql_->Learn(reward, new Stav(zstav_->to_array()), lastAction, false);//TODO Pozor momentalne to je spravene na tu minihru s dierou ktoru ma obchadzat (natvrdo bohuzial) takze velkosti stavou nesedia
+        for (auto unit : units)
+        {
+            ql_->Learn(reward, new Stav(zstav_->to_array()), lastAction, false);//TODO Pozor momentalne to je spravene na tu minihru s dierou ktoru ma obchadzat (natvrdo bohuzial) takze velkosti stavou nesedia
 
-        if (units.empty())
-        {
-            //this->Vypis(" Nemame jednotky.");
-            return;//ak nemame vojakov step sa nedeje (padlo)
+            if (units.empty())
+            {
+                //this->Vypis(" Nemame jednotky.");
+                return;//ak nemame vojakov step sa nedeje (padlo)
+            }
+            GetState(*unit);
+            srand(time(NULL));
+            int akcia = ql_->ChooseAction(false, this->state_);///TODO tu mu posli stav
+            sc2::Units jednotkyNepriatelov = Observation()->GetUnits(sc2::Unit::Enemy);
+            if (akcia == 0)
+            {
+                //Vypis("  Strategia USTUP");
+                step = 30;
+                this->StrategiaUstup(units[0], jednotkyNepriatelov);
+            }
+            else if (akcia == 1)
+            {
+                //Vypis("  Strategia ZMEN TARGET");
+                step = 100;
+                this->StrategiaZmenTarget(units[0]);
+            }
+            else
+            {
+                //Vypis("  Strategia UTOC");
+                step = 100;
+                this->StrategiaUtoc(units[0]);
+            }
+            lastAction = akcia;
         }
-        GetState();
-        srand(time(NULL));
-        int akcia = ql_->ChooseAction(false, this->state_);///TODO tu mu posli stav
-        sc2::Units jednotkyNepriatelov = Observation()->GetUnits(sc2::Unit::Enemy);
-        if (akcia == 0)
-        {
-            //Vypis("  Strategia USTUP");
-            step = 30;
-            this->StrategiaUstup(units[0], jednotkyNepriatelov);
-        }
-        else if (akcia == 1)
-        {
-            //Vypis("  Strategia ZMEN TARGET");
-            step = 100;
-            this->StrategiaZmenTarget(units[0]);
-        }
-        else
-        {
-            //Vypis("  Strategia UTOC");
-            step = 100;
-            this->StrategiaUtoc(units[0]);
-        }
-        lastAction = akcia;
     }
 
     /*
@@ -400,8 +407,9 @@ void ZealotBot::HladajNepriatela(const sc2::Unit* unit)
     Actions()->UnitCommand(unit, sc2::ABILITY_ID::SMART, target);
 }
 
-void ZealotBot::GetState() const
+void ZealotBot::GetState(sc2::Unit unit)
 {
+    //todo upravit getstate
     float totalHealth = 0.0;
     float maxHealth = 0.0;
     float totalShield = 0.0;

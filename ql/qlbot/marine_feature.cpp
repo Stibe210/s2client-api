@@ -258,17 +258,17 @@ int* MarineFeature::get_quadrantSafety()
 vector<int>* MarineFeature::to_array()
 {
     vector<int>* pole = new vector<int>();
-    pole->resize(10);
+    pole->resize(2);
     (*pole)[0] = hp1;
-    (*pole)[1] = hp2;
-	(*pole)[2] = hp3;
+    (*pole)[1] = vzd1odNepriatela;
+	/*(*pole)[2] = hp3;
     (*pole)[3] = vzd1odNepriatela;
     (*pole)[4] = vzd2odNepriatela;
 	(*pole)[5] = vzd3odNepriatela;
 	(*pole)[6] = quadrantSafety[0];
 	(*pole)[7] = quadrantSafety[1];
 	(*pole)[8] = quadrantSafety[2];
-	(*pole)[9] = quadrantSafety[3];
+	(*pole)[9] = quadrantSafety[3];*/
     return pole;
 }
 

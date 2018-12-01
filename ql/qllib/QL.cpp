@@ -241,8 +241,8 @@ void QL::Load(string path)
         {
             int a = 5;
         }*/
-        qHodnoty; //= new vector<float>();//new int[pocetAkcii];
-		qHodnoty->resize(pocetAkcii);
+        qHodnoty = new vector<float>(pocetAkcii);//new int[pocetAkcii];
+		//qHodnoty->resize(pocetAkcii);
         cout << "akcie" << pocetAkcii << endl;
         if (qInicialization == nullptr) {
             //zmeni q hodnoty na 0 bo c++ ta nwm :D :D 

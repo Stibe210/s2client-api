@@ -2,6 +2,7 @@
 #include "sc2api/sc2_agent.h"
 
 #include "marine_feature.h"
+#include "marine_test_feature.h"
 #include "qllib/Stav.h"
 #include "qllib/QL.h"
 
@@ -9,6 +10,7 @@ class MarineBot : public sc2::Agent
 {
     uint32_t restarts_;
     MarineFeature* mfeature_;
+    MarineTestFeature* test_feature_;
     QL* ql_;
     Stav* state_;
 

@@ -17,9 +17,10 @@ MarineBot::MarineBot() : restarts_(0), reward(0), global_reward(0), lastAction(0
 	double ALPHA = 0.05;
 	double EPSILON = 0.75;
 
-	mfeature_ = new MarineFeature();
-	state_ = new Stav(new vector<int>(10, 0));///TODO NATVRDO nasraaaaaat com to tu ide - zaujimavy koment
-	ql_ = new QL(state_, 10, 4, new QInit());
+	//mfeature_ = new MarineFeature();
+    test_feature_ = new MarineTestFeature();
+	state_ = new Stav(new vector<int>(2, 0));///TODO NATVRDO nasraaaaaat com to tu ide - zaujimavy koment
+    ql_ = new QL(state_, 2, 4, new QInit());
 	ql_->SetHyperparemeters(ALPHA, GAMMA, EPSILON);
     //srand(time(nullptr)); //??co je toto za kod?
 	
@@ -51,12 +52,12 @@ void MarineBot::OnStep()
 		global_reward += reward;
 		*/
 		reward = 0;
-		ql_->Learn(reward, new Stav(mfeature_->to_array()), lastAction, false);//TODO Pozor momentalne to je spravene na tu minihru s dierou ktoru ma obchadzat (natvrdo bohuzial) takze velkosti stavou nesedia
+		ql_->Learn(reward, new Stav(test_feature_->to_array()), lastAction, true);//TODO Pozor momentalne to je spravene na tu minihru s dierou ktoru ma obchadzat (natvrdo bohuzial) takze velkosti stavou nesedia
 		
 		SetFeatures(unit);
 		
-		srand(time(NULL)); // CO TO TU ROBI????
-		int akcia = ql_->ChooseAction(false, this->state_);///TODO tu mu posli stav
+		srand(time(NULL)); // CO TO TU ROBI???? tiez zaujimavy koment
+		int akcia = ql_->ChooseAction(false, this->state_);//TODO tu mu posli stav
 		
 		switch (akcia)
 		{
@@ -109,7 +110,8 @@ void MarineBot::OnGameEnd()
 				reward += 1000;
 				global_reward += reward;
 				cout << "Vyhral som. " /*<< this->ReportNaKonciHry()*/ << endl;
-				ql_->Learn(reward, new Stav(mfeature_->to_array()), lastAction, false);
+				//ql_->Learn(reward, new Stav(mfeature_->to_array()), lastAction, false);
+                ql_->Learn(reward, new Stav(test_feature_->to_array()), lastAction, false);
 				break;
 			}
 			cout << "Prehral som. " << endl /*<< this->ReportNaKonciHry()*/ << endl;
@@ -315,6 +317,19 @@ float MarineBot::GetClosestEnemy(const Unit* source_unit, Unit*& closest_unit)
  */
 void MarineBot::SetFeatures(const Unit* unit)
 {
+    float health;
+    float max_health;
+    float distance = FLT_MAX;
+    auto enemy_units = Observation()->GetUnits(sc2::Unit::Alliance::Enemy); 
+    test_feature_->set_hp(unit->health / unit->health_max);
+
+    for (auto enemy : enemy_units)
+    {
+        if (Distance2D(enemy->pos, unit->pos) < distance)
+            distance = Distance2D(enemy->pos, unit->pos);
+    }
+    test_feature_->set_enemy_dist(distance);
+/*
 	float totalHealth = 0.0;
 	float maxHealth = 0.0;
 	float totalShield = 0.0;
@@ -334,5 +349,5 @@ void MarineBot::SetFeatures(const Unit* unit)
 		mfeature_->set_vzd2odNepriatela(current_distance);
 		
 	}
-	mfeature_->set_quadrantSafety(GetFeatureQuadrant(unit));
+	mfeature_->set_quadrantSafety(GetFeatureQuadrant(unit));*/
 }

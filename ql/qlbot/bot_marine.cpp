@@ -17,11 +17,11 @@ MarineBot::MarineBot() : restarts_(0), reward(0), global_reward(0), lastAction(0
 	double ALPHA = 0.05;
 	double EPSILON = 0.75;
 
-	//mfeature_ = new MarineFeature();
-    test_feature_ = new MarineTestFeature();
+	mfeature_ = new MarineFeature();
 	state_ = new Stav(new vector<int>(2, 0));///TODO NATVRDO nasraaaaaat com to tu ide - zaujimavy koment
-    ql_ = new QL(state_, 2, 4, new QInit());
+	ql_ = new QL(state_, 2, 2, new QInit());
 	ql_->SetHyperparemeters(ALPHA, GAMMA, EPSILON);
+	//ql_->Load("marine_saveQL.csv");
     //srand(time(nullptr)); //??co je toto za kod?
 	
 }
@@ -43,7 +43,11 @@ void MarineBot::OnStep()
 	
 	for (auto unit : units)
 	{	
-		Debug()->DebugMoveCamera(unit->pos);
+		auto stred = new Point2D(
+			Observation()->GetGameInfo().playable_min.x + (Observation()->GetGameInfo().playable_max.x - Observation()->GetGameInfo().playable_min.x)/2,
+			Observation()->GetGameInfo().playable_min.y + (Observation()->GetGameInfo().playable_max.y - Observation()->GetGameInfo().playable_min.y)/2-2
+		);
+		Debug()->DebugMoveCamera(*stred);
 		Debug()->SendDebug();
 		/*float pomocna = Observation()->GetScore().score_details.total_damage_dealt.life;
 		pomocna += Observation()->GetScore().score_details.total_damage_dealt.shields;
@@ -71,7 +75,7 @@ void MarineBot::OnStep()
 			step = 100;
 			this->StrategiaDopredu(unit);
 			break;
-		case 2:
+		/*case 2:
 			//Vypis("  Strategia UTOC");
 			step = 100;
 			this->StrategiaUtoc(unit);
@@ -80,7 +84,7 @@ void MarineBot::OnStep()
 			//Vypis("  Strategia POHYB DO KVADRANTU");
 			step = 30;
 			this->AkciaPohybKvadrant(unit);
-			break;
+			break;*/
 		default:
 			break;
 		}
@@ -91,15 +95,16 @@ void MarineBot::OnStep()
 void MarineBot::OnGameEnd()
 {
 	++restarts_;
-	if (restarts_ % 10 == 0)
+	if (restarts_ % 5 == 0)
 	{
-		this->SaveQL();
+		this->ql_->Save("marine_saveQL.csv");
 		//Priebezne uklada to je asi len docasne alebo sa potom zvacsi interval
 		//ak by padlo a podobne
 		cout << "Ukladam." << endl;
 	}
 	//cout << Observation()->GetUnitTypeData().at(static_cast<int>(sc2::UNIT_TYPEID::PROTOSS_ZEALOT)).l;
 
+	
 	auto vysledky = Observation()->GetResults();
 	for (auto player_result : vysledky)
 	{
@@ -136,6 +141,8 @@ void MarineBot::StrategiaUstup(const Unit* unit)
     const ObservationInterface* observation = Observation();
     Units units = observation->GetUnits(Unit::Ally);
     auto pomocna = Observation()->GetUnitTypeData().at((*unit).unit_type).weapons;
+
+	
     if (distance == pomocna[0].range)
     {
         Actions()->UnitCommand(unit, ABILITY_ID::ATTACK, unit->pos);
@@ -175,7 +182,8 @@ void MarineBot::StrategiaUstup(const Unit* unit)
                 y = closest_unit->pos.y + abs(closest_unit->pos.y - unit->pos.y) * (5 / distance);
             }
         }
-        /*cout << "X kam by som mal ist: " << x << endl;
+		this->HraniceKerovanie(unit, closest_unit, x, y, 5);		
+			/*cout << "X kam by som mal ist: " << x << endl;
         cout << "Y kam by som mal ist: " << y << endl;
         cout << "Povodny distance " << distance << endl;*/
         Actions()->UnitCommand(unit, ABILITY_ID::MOVE, *new Point2D(x, y), false);
@@ -350,4 +358,74 @@ void MarineBot::SetFeatures(const Unit* unit)
 		
 	}
 	mfeature_->set_quadrantSafety(GetFeatureQuadrant(unit));*/
+}
+
+void MarineBot::HraniceKerovanie(const Unit* unit, const Unit* closestUnit, float& x, float& y, int posun)
+{
+	auto hraciaHranicaMax = Observation()->GetGameInfo().playable_max;
+	auto hraciaHranicaMin = Observation()->GetGameInfo().playable_min;
+	
+	float hranicaX = 0;
+	float hranicaY = 0;
+
+	if (x < hraciaHranicaMin.x)
+		hranicaX = (hraciaHranicaMin.x - x) / (unit->pos.x - x);
+	else if (x > hraciaHranicaMax.x)
+		hranicaX = (-hraciaHranicaMax.x + x) / (-unit->pos.x + x);
+
+	if (y < hraciaHranicaMin.y)
+		hranicaY = (hraciaHranicaMin.y - y) / (unit->pos.y - y);
+	else if (y > hraciaHranicaMax.y)
+		hranicaY = (-hraciaHranicaMax.y + y) / (-unit->pos.y + y);
+
+	if (hranicaX != 0 && hranicaY == 0)
+	{
+		if (x < hraciaHranicaMin.x)
+			x = hraciaHranicaMin.x + (unit->pos.x - x)*hranicaX;
+		else
+			x = hraciaHranicaMax.x - (-unit->pos.x + x)*hranicaX;;
+		//if ((closestUnit->pos.y - hraciaHranicaMin.y) / (hraciaHranicaMax.y - hraciaHranicaMin.y) <= 0.5)
+		if (closestUnit->pos.y < unit->pos.y)
+			y += posun * hranicaX;
+		else
+			y -= posun * hranicaX;
+	}		
+	else if (hranicaX == 0 && hranicaY != 0)
+	{
+		if (y < hraciaHranicaMin.y)
+			y = hraciaHranicaMin.y + (unit->pos.y - y)*hranicaY;
+		else
+			y = hraciaHranicaMax.y - (-unit->pos.y + y)*hranicaY;;
+		//if ((closestUnit->pos.x - hraciaHranicaMin.x) / (hraciaHranicaMax.x - hraciaHranicaMin.x) <= 0.5)
+		if (closestUnit->pos.x < unit->pos.x)
+			x += posun * hranicaY;
+		else
+			x -= posun * hranicaY;
+	}		
+	else if (hranicaX != 0 && hranicaY != 0)
+	{
+		if (hranicaX > hranicaY)
+		{
+			if (x < hraciaHranicaMin.x)
+				x = hraciaHranicaMin.x + 0.5;
+			else
+				x = hraciaHranicaMax.x - 0.5;
+			if (y < hraciaHranicaMin.y)
+				y = hraciaHranicaMin.y + 5/*(hranicaX + hranicaY) * posun*/;
+			else
+				y = hraciaHranicaMax.y- 5/*(hranicaX + hranicaY) * posun*/;
+
+		}
+		else
+		{
+			if (y < hraciaHranicaMin.y)
+				y = hraciaHranicaMin.y + 0.5;
+			else
+				y = hraciaHranicaMax.y - 0.5;
+			if (x < hraciaHranicaMin.x)
+				x = hraciaHranicaMin.x + 5/*(hranicaX + hranicaY) * posun*/;
+			else
+				x = hraciaHranicaMax.x - 5/*(hranicaX + hranicaY) * posun*/;
+		}
+	}
 }

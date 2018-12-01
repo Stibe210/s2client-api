@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
         CreateParticipant(sc2::Race::Terran, &marine)/*,
         //CreateParticipant(sc2::Race::Protoss, &zealot)//*/
         });
-    //coordinator.SetRealtime(true);
+    coordinator.SetRealtime(true);
     // Start the game.
     coordinator.LaunchStarcraft();
 

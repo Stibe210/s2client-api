@@ -25,6 +25,8 @@ class MarineBot : public sc2::Agent
 
     int GetQuadrantIndex(const sc2::Unit*, const sc2::Unit*);
     float* GetFeatureQuadrant(const sc2::Unit*);
+
+    void HraniceKerovanie(const sc2::Unit*, const sc2::Unit*, float&, float&, int);
 public:
     MarineBot();
     void OnGameStart() override final;

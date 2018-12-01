@@ -236,11 +236,11 @@ void QL::Load(string path)
 
 	QL::QStav::QStav (int pocetAkcii,QInit* qInicialization)
 	{
-    /*
-        if (pocetAkcii == 3)
-        {
-            int a = 5;
-        }*/
+        /*
+            if (pocetAkcii == 3)
+            {
+                int a = 5;
+            }*/
         qHodnoty = new vector<float>(pocetAkcii);//new int[pocetAkcii];
 		//qHodnoty->resize(pocetAkcii);
         cout << "akcie" << pocetAkcii << endl;

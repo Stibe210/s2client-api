@@ -18,6 +18,7 @@ MarineBot::MarineBot() : restarts_(0), reward(0), global_reward(0), lastAction(0
 	double EPSILON = 0.75;
 
 	mfeature_ = new MarineFeature();
+    test_feature_ = new MarineTestFeature();
 	state_ = new Stav(new vector<int>(2, 0));///TODO NATVRDO nasraaaaaat com to tu ide - zaujimavy koment
 	ql_ = new QL(state_, 2, 2, new QInit());
 	ql_->SetHyperparemeters(ALPHA, GAMMA, EPSILON);

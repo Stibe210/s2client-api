@@ -18,7 +18,7 @@ MarineBot::MarineBot() : restarts_(0), reward(0), radiusQuadrant(5), lastAction(
 	double const EPSILON = 0.75;
 	int const featureCount = 2;
 	int const actionCount = 2;
-
+	
 	feature_ = *new std::unordered_map<unsigned long long,MarineFeature*>;
 	state_ = new Stav(new vector<int>(featureCount, 0));///TODO NATVRDO nasraaaaaat com to tu ide - zaujimavy koment
 	ql_ = new QL(state_, featureCount, actionCount, new QInit());
@@ -31,6 +31,7 @@ MarineBot::MarineBot() : restarts_(0), reward(0), radiusQuadrant(5), lastAction(
 
 void MarineBot::OnGameStart()
 {
+	lastAction = 0;
     std::cout << "Starting a new game (" << restarts_ << " restarts)" << std::endl;
 	auto units = Observation()->GetUnits(Unit::Alliance::Self);
 	for (auto unit : units)
@@ -75,10 +76,11 @@ void MarineBot::OnStep()
 		{
 			reward += Observation()->GetUnitTypeData().at((*unit).unit_type).weapons[0].damage_;
 			feature->set_weaponCDLastReward(unit->weapon_cooldown);
-			cout << "Weapon reward-";
+			//cout << "Weapon reward-";
+			lastAction++;
 		}
 		reward += hpDiff;
-		cout << "Reward: " << reward << endl;
+		//cout << "Reward: " << reward << endl;
 		ql_->Learn(reward, new Stav(feature->to_array()), feature->get_lastAction(), false);
 		//TODO Pozor momentalne to je spravene na tu minihru s dierou ktoru ma obchadzat (natvrdo bohuzial) takze velkosti stavou nesed
 		SetFeatures(unit, feature);		
@@ -114,6 +116,7 @@ void MarineBot::OnStep()
 
 void MarineBot::OnGameEnd()
 {
+	//cout << "Pocet vystrelov vraj: " << lastAction << endl;
 	++restarts_;
 	if (restarts_ % 5 == 0)
 	{
@@ -128,7 +131,7 @@ void MarineBot::OnGameEnd()
 		{
 			if (player_result.result == 0)
 			{
-				reward = 1000;
+				reward = 100;
 				cout << "Vyhral som. " /*<< this->ReportNaKonciHry()*/ << endl;
 				auto units = Observation()->GetUnits(Unit::Alliance::Self);
 				for (auto unit : units)

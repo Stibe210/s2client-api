@@ -6,10 +6,10 @@
 #include "qllib/Stav.h"
 #include "qllib/QL.h"
 
-class MarineBot : public sc2::Agent
+class MarineBotTest2F : public sc2::Agent
 {
     uint32_t restarts_;
-    MarineFeature* feature_;
+    MarineTestFeature* feature_;
     QL* ql_;
     Stav* state_;
 
@@ -33,7 +33,7 @@ class MarineBot : public sc2::Agent
     int GetQuadrantIndex(const sc2::Unit*, const sc2::Unit*);
     
 public:
-    MarineBot();
+    MarineBotTest2F();
     void OnGameStart() override final;
     void OnStep() override final;
     void OnGameEnd() override final;

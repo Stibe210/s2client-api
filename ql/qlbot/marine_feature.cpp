@@ -1,12 +1,12 @@
 #include "qlbot/marine_feature.h"
 
 
-MarineFeature::MarineFeature(int paFeatureCount) : hp(0), distanceFromClosestEnemy(0), featureCount(paFeatureCount)
+MarineFeature::MarineFeature(int paFeatureCount) : hp(0), distanceFromClosestEnemy(0), featureCount(paFeatureCount), lastAction(-1), hpValue(0), weaponCD(0)
 {
 	quadrantSafety = new int[4] {0, 0, 0, 0};
 }
 
-MarineFeature::MarineFeature() : hp(0), distanceFromClosestEnemy(0), featureCount(2)
+MarineFeature::MarineFeature() : hp(0), distanceFromClosestEnemy(0), featureCount(2), lastAction(-1), hpValue(0), weaponCD(0)
 {
 	quadrantSafety = new int[4]{ 0, 0, 0, 0 };
 }
@@ -15,8 +15,9 @@ MarineFeature::~MarineFeature()
 {
 }
 
-void MarineFeature::set_hp(float hpPer)
+void MarineFeature::set_hp(float hpPer, float hp)
 {
+	hpValue = hp;
     //skuska prikladat mensiemu hp velku dolezitost
     if (hpPer < 0.1)
     {
@@ -138,5 +139,40 @@ vector<int>* MarineFeature::to_array()
 	(*pole)[8] = quadrantSafety[2];
 	(*pole)[9] = quadrantSafety[3];*/
     return pole;
+}
+
+
+int MarineFeature::get_lastAction()
+{
+	return lastAction;
+}
+void MarineFeature::set_lastAction(int action)
+{
+	lastAction = action;
+}
+
+float MarineFeature:: get_hpValue()
+{
+	return hpValue;
+}
+
+void MarineFeature::set_weaponCD(float cd)
+{
+	weaponCD = cd;
+}
+
+float MarineFeature::get_weaponCD()
+{
+	return weaponCD;
+}
+
+void MarineFeature::set_weaponCDLastReward(float cd)
+{
+	weaponCDLastReward = cd;
+}
+
+float MarineFeature::get_weaponCDLastReward()
+{
+	return weaponCDLastReward;
 }
 

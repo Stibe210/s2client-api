@@ -9,7 +9,7 @@
 class MarineBot : public sc2::Agent
 {
     uint32_t restarts_;
-    MarineFeature* feature_;
+    std::unordered_map<unsigned long long, MarineFeature*> feature_;
     QL* ql_;
     Stav* state_;
 
@@ -18,7 +18,7 @@ class MarineBot : public sc2::Agent
     int lastAction;
     int step;
 
-    void SetFeatures(const sc2::Unit*);
+    void SetFeatures(const sc2::Unit*, MarineFeature*&);
     
     float* GetFeatureQuadrant(const sc2::Unit*);
 

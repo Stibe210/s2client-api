@@ -29,7 +29,7 @@ class ZealotBot : public sc2::Agent
     void triangulate(float speed, float degree, float& x, float& y) const;
 
 public:
-    ZealotBot(int count);
+    ZealotBot(int count = 0);
     void Vypis(std::string);
     void OnGameStart() override final;
     void OnStep() override final;

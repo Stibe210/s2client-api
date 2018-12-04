@@ -6,10 +6,10 @@
 #include "qllib/Stav.h"
 #include "qllib/QL.h"
 
-class MarineBot : public sc2::Agent
+class MarineBotTest2F : public sc2::Agent
 {
     uint32_t restarts_;
-    std::unordered_map<unsigned long long, MarineFeature*> feature_;
+    MarineTestFeature* feature_;
     QL* ql_;
     Stav* state_;
 
@@ -18,7 +18,7 @@ class MarineBot : public sc2::Agent
     int lastAction;
     int step;
 
-    void SetFeatures(const sc2::Unit*, MarineFeature*&);
+    void SetFeatures(const sc2::Unit*);
     
     float* GetFeatureQuadrant(const sc2::Unit*);
 
@@ -33,7 +33,7 @@ class MarineBot : public sc2::Agent
     int GetQuadrantIndex(const sc2::Unit*, const sc2::Unit*);
     
 public:
-    MarineBot();
+    MarineBotTest2F();
     void OnGameStart() override final;
     void OnStep() override final;
     void OnGameEnd() override final;

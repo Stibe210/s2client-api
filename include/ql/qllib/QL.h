@@ -22,7 +22,7 @@ private:
     float EPSILONx1000 = 0.75 * 1000;//kolko ide random
     float ALPHA = 0.05;//learning rate
     float zmenaALPHA = 1;// 0.9999;
-    float zmenaEPSILON = 1;// 0.999;
+    float zmenaEPSILON = 0.999;// 0.999;
     QInit* qInit = nullptr;
 
 

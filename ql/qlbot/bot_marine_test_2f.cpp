@@ -47,7 +47,7 @@ void MarineBotTest2F::OnStep()
     if (alliedUnits.empty()) return;    
 	auto enemyUnits = Observation()->GetUnits(Unit::Enemy);
 	if (enemyUnits.empty()) return;
-	cout << "Step" << endl;
+	//cout << "Step" << endl;
 	for (auto unit : alliedUnits)
 	{			
 		/*float pomocna = Observation()->GetScore().score_details.total_damage_dealt.life;
@@ -57,7 +57,7 @@ void MarineBotTest2F::OnStep()
 		global_reward += reward;
 		*/
 		//*
-		cout << "Tag jednotky je: " << unit->tag << endl;
+		//cout << "Tag jednotky je: " << unit->tag << endl;
 		reward = 0;
 		ql_->Learn(reward, new Stav(feature_->to_array()), lastAction, false);
 		//TODO Pozor momentalne to je spravene na tu minihru s dierou ktoru ma obchadzat (natvrdo bohuzial) takze velkosti stavou nesed
@@ -128,7 +128,7 @@ void MarineBotTest2F::ActionMoveBack(const Unit* unit)
     Unit* closest_unit = nullptr;
 	Units units = Observation()->GetUnits(Unit::Ally);
 	float distanceFromEnemy = GetClosestEnemy(unit, closest_unit);
-    //auto weaponRange = Observation()->GetUnitTypeData().at((*unit).unit_type).weapons[0].range;
+    auto weaponRange = Observation()->GetUnitTypeData().at((*unit).unit_type).weapons[0].range;
 	
 	/*
     if (distance == pomocna[0].range)
@@ -148,26 +148,26 @@ void MarineBotTest2F::ActionMoveBack(const Unit* unit)
     {
         if (closest_unit->pos.y > unit->pos.y)
         {
-            x = closest_unit->pos.x - abs(closest_unit->pos.x - unit->pos.x) /** (pomocna / distance)*/;
-            y = closest_unit->pos.y - abs(closest_unit->pos.y - unit->pos.y) /** (pomocna / distance)*/;
+            x = closest_unit->pos.x - abs(closest_unit->pos.x - unit->pos.x) * (weaponRange / distanceFromEnemy);
+            y = closest_unit->pos.y - abs(closest_unit->pos.y - unit->pos.y) * (weaponRange / distanceFromEnemy);
         }
         else
         {
-            x = closest_unit->pos.x - abs(closest_unit->pos.x - unit->pos.x) /** (pomocna / distance)*/;
-            y = closest_unit->pos.y + abs(closest_unit->pos.y - unit->pos.y) /** (pomocna / distance)*/;
+            x = closest_unit->pos.x - abs(closest_unit->pos.x - unit->pos.x) * (weaponRange / distanceFromEnemy);
+            y = closest_unit->pos.y + abs(closest_unit->pos.y - unit->pos.y) * (weaponRange / distanceFromEnemy);
         }
     }
     else
     {
-        if (closest_unit->pos.y > unit->pos.y)
-        {
-            x = closest_unit->pos.x + abs(closest_unit->pos.x - unit->pos.x) /** (pomocna / distance)*/;
-            y = closest_unit->pos.y - abs(closest_unit->pos.y - unit->pos.y) /** (pomocna / distance)*/;
-        }
+		if (closest_unit->pos.y > unit->pos.y)
+		{
+			x = closest_unit->pos.x + abs(closest_unit->pos.x - unit->pos.x) * (weaponRange / distanceFromEnemy);
+			y = closest_unit->pos.y - abs(closest_unit->pos.y - unit->pos.y) * (weaponRange / distanceFromEnemy);
+		}
         else
         {
-            x = closest_unit->pos.x + abs(closest_unit->pos.x - unit->pos.x) /** (pomocna / distance)*/;
-            y = closest_unit->pos.y + abs(closest_unit->pos.y - unit->pos.y) /** (pomocna / distance)*/;
+            x = closest_unit->pos.x + abs(closest_unit->pos.x - unit->pos.x) * (weaponRange / distanceFromEnemy);
+            y = closest_unit->pos.y + abs(closest_unit->pos.y - unit->pos.y) * (weaponRange / distanceFromEnemy);
         }
     }
 	this->MoveBorderBend(unit, closest_unit, x, y, 5);		

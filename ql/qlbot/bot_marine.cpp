@@ -31,14 +31,13 @@ MarineBot::MarineBot() : restarts_(0), reward(0), radiusQuadrant(5), lastAction(
 
 void MarineBot::OnGameStart()
 {
-	lastAction = 0;
     std::cout << "Starting a new game (" << restarts_ << " restarts)" << std::endl;
 	auto units = Observation()->GetUnits(Unit::Alliance::Self);
 	for (auto unit : units)
 	{
 		MarineFeature* ftr = new MarineFeature();
 		SetFeatures(unit, ftr);
-		ftr->set_lastAction(0);
+		ftr->set_lastAction(1);
 		feature_.insert(std::make_pair(unit->tag,ftr));
 		
 	}
@@ -79,7 +78,7 @@ void MarineBot::OnStep()
 			//cout << "Weapon reward-";
 			lastAction++;
 		}
-		reward += hpDiff;
+		//reward += hpDiff;
 		//cout << "Reward: " << reward << endl;
 		ql_->Learn(reward, new Stav(feature->to_array()), feature->get_lastAction(), false);
 		//TODO Pozor momentalne to je spravene na tu minihru s dierou ktoru ma obchadzat (natvrdo bohuzial) takze velkosti stavou nesed
@@ -120,7 +119,7 @@ void MarineBot::OnGameEnd()
 	++restarts_;
 	if (restarts_ % 5 == 0)
 	{
-		this->ql_->Save("marine_saveQL_2f.csv");
+		this->ql_->Save("marine_saveQL.csv");
 		cout << "Ukladam po " << restarts_ << "hrach." << endl;
 	}
 	
@@ -410,9 +409,9 @@ void MarineBot::MoveBorderBend(const Unit* unit, const Unit* closestUnit, float&
 		if (xOffLength > yOffLength)
 		{
 			if (x < borderMin.x)
-				x = borderMin.x + 0.5;
+				x = borderMin.x + 0.5f;
 			else
-				x = borderMax.x - 0.5;
+				x = borderMax.x - 0.5f;
 			if (y < borderMin.y)
 				y = borderMin.y + 5/*(hranicaX + hranicaY) * movementSize*/;
 			else
@@ -422,9 +421,9 @@ void MarineBot::MoveBorderBend(const Unit* unit, const Unit* closestUnit, float&
 		else
 		{
 			if (y < borderMin.y)
-				y = borderMin.y + 0.5;
+				y = borderMin.y + 0.5f;
 			else
-				y = borderMax.y - 0.5;
+				y = borderMax.y - 0.5f;
 			if (x < borderMin.x)
 				x = borderMin.x + 5/*(hranicaX + hranicaY) * movementSize*/;
 			else

@@ -49,6 +49,11 @@ void QL::PremazMinulyStav() {
     minulaAkcia = 0;
 }
 
+/*
+ *epsilon kolko berie random 
+ *alpha learning rate
+ * gama je zabudanie? neviem teraz 
+ */
 void QL::SetHyperparemeters(float alpha, float gamma, float epsilon)
 {
     ALPHA = alpha;
@@ -63,12 +68,17 @@ int QL::ChooseAction(bool vybratNajlepsie, Stav* stav)
 {
 
     int nahoda = rand() % 1000;
-	//zatial napevno potom ako parameter asi abo co 
 	//mozno nejaka vazena nahoda podla hodnoty q
 	if (nahoda < EPSILONx1000 && !vybratNajlepsie)
 	{
-		//nahodne
-		return rand() % pocetAkcii;
+        //kus duplicita ale koho zajima
+        auto pairr = stavy->find(stav);
+        if (pairr == stavy->end()) {
+            //Taky stav este nebol -> random akcia
+            return rand() % pocetAkcii;
+        }
+        QL::QStav* qSt = pairr->second;
+        return qSt->VyberNahodnuAkciu();
 	} else
 	{
         //Vyberame najlepsiu
@@ -87,6 +97,8 @@ int QL::ChooseAction(bool vybratNajlepsie, Stav* stav)
 		return qSt->DajNajlepsiuAkciu();
 	}
 }
+
+
 
 void QL::UpravHyperparametre()
 {
@@ -234,13 +246,9 @@ void QL::Load(string path)
 		return qHodnoty;
 	}
 
-	QL::QStav::QStav (int pocetAkcii,QInit* qInicialization)
+	QL::QStav::QStav (int pocetAkcii,QInit* qInicialization):pristupy(pocetAkcii)
 	{
-        /*
-            if (pocetAkcii == 3)
-            {
-                int a = 5;
-            }*/
+
         qHodnoty = new vector<float>(pocetAkcii);//new int[pocetAkcii];
 		//qHodnoty->resize(pocetAkcii);
         cout << "akcie" << pocetAkcii << endl;
@@ -258,6 +266,46 @@ void QL::Load(string path)
         }
 	}
 
+    int QL::QStav::VyberNahodnuAkciu()
+    {
+        //prejde vsetky pristupy a spocita nulove
+        int pocetNulovychPristupov = 0;
+        int indexPoslednehoNenuloveho = 0;
+        for (size_t i = 1; i < pristupy.size(); i++)
+        {
+            if (pristupy[i] == 0)
+            {
+                pocetNulovychPristupov++;
+                indexPoslednehoNenuloveho = i;
+            }
+        }
+        //ak je len jeden tak vrati ten
+        if (pocetNulovychPristupov == 0)
+        {
+            int nahoda = rand() % pristupy.size();
+            pristupy[nahoda]++;
+            return nahoda;
+        }
+        else if (pocetNulovychPristupov == 1)
+        {
+            pristupy[indexPoslednehoNenuloveho]++;
+            return indexPoslednehoNenuloveho;
+        }
+        else
+        {
+            //daco jak bogo sort :D 
+            //vybera random kym nezobere akciu co nemala pristup
+            int nahoda = rand() % pristupy.size();
+            while(pristupy[nahoda]!=0)
+            {
+                nahoda = rand() % pristupy.size();
+            }
+            pristupy[nahoda]++;
+            return nahoda;
+        }
+
+    }
+
     QL::QStav::QStav(vector<float>* qHod) {
         qHodnoty = qHod;
     }
@@ -270,7 +318,7 @@ void QL::Load(string path)
 
 	int QL::QStav::DajNajlepsiuAkciu() {
 		int index=0;
-		//vector<float> qHod = *qHodnoty;
+
 		float hodnota= (*qHodnoty)[0];
 		for (size_t i = 1; i < qHodnoty->size(); i++)
 		{

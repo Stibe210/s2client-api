@@ -48,12 +48,14 @@ public:
 	private:
 		//Obsahuje Q hodnoty akcii v danom stave
 		vector<float>* qHodnoty;
+        vector<int> pristupy;
 		public:
             QStav(int pocetAkcii, QInit* qin);
             QStav(vector<float>* qHodnoty);
             ~QStav();
             vector<float>* DajQHodnoty();		
 			int DajNajlepsiuAkciu();
+            int VyberNahodnuAkciu();
 			float DajNajvyssieQ();
 			void UpdateQ(int akcia, float cieloveQ, float gamma, int mod);
 			string toString();

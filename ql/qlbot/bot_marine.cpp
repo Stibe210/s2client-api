@@ -18,8 +18,8 @@ MarineBot::MarineBot() : restarts_(0), reward(0), radiusQuadrant(5), lastAction(
 	double const EPSILON = 0.75;
 	int const featureCount = 2;
 	int const actionCount = 2;
-
-	feature_ = new MarineFeature();
+	
+	feature_ = *new std::unordered_map<unsigned long long,MarineFeature*>;
 	state_ = new Stav(new vector<int>(featureCount, 0));///TODO NATVRDO nasraaaaaat com to tu ide - zaujimavy koment
 	ql_ = new QL(state_, featureCount, actionCount, new QInit());
 	ql_->SetHyperparemeters(ALPHA, GAMMA, EPSILON);
@@ -33,7 +33,14 @@ void MarineBot::OnGameStart()
 {
     std::cout << "Starting a new game (" << restarts_ << " restarts)" << std::endl;
 	auto units = Observation()->GetUnits(Unit::Alliance::Self);
-	SetFeatures(units[0]);
+	for (auto unit : units)
+	{
+		MarineFeature* ftr = new MarineFeature();
+		SetFeatures(unit, ftr);
+		ftr->set_lastAction(1);
+		feature_.insert(std::make_pair(unit->tag,ftr));
+		
+	}
 	Debug()->DebugMoveCamera(*new Point2D(
 		Observation()->GetGameInfo().playable_min.x + (Observation()->GetGameInfo().playable_max.x - Observation()->GetGameInfo().playable_min.x) / 2,
 		Observation()->GetGameInfo().playable_min.y + (Observation()->GetGameInfo().playable_max.y - Observation()->GetGameInfo().playable_min.y) / 2 - 4
@@ -47,7 +54,8 @@ void MarineBot::OnStep()
     if (alliedUnits.empty()) return;    
 	auto enemyUnits = Observation()->GetUnits(Unit::Enemy);
 	if (enemyUnits.empty()) return;
-	cout << "Step" << endl;
+	//cout << "Step" << endl;
+	srand(time(NULL));
 	for (auto unit : alliedUnits)
 	{			
 		/*float pomocna = Observation()->GetScore().score_details.total_damage_dealt.life;
@@ -57,11 +65,25 @@ void MarineBot::OnStep()
 		global_reward += reward;
 		*/
 		//*
-		cout << "Tag jednotky je: " << unit->tag << endl;
+		//cout << "Tag jednotky je: " << unit->tag << endl;
 		reward = 0;
-		ql_->Learn(reward, new Stav(feature_->to_array()), lastAction, false);
+
+		auto feature = feature_[unit->tag];
+		auto hpDiff = unit->health - feature->get_hpValue();
+
+		float weaponCDOld = feature->get_weaponCDLastReward();
+		if (unit->weapon_cooldown > weaponCDOld)
+		{
+			reward += Observation()->GetUnitTypeData().at((*unit).unit_type).weapons[0].damage_;
+			feature->set_weaponCDLastReward(unit->weapon_cooldown);
+			//cout << "Weapon reward-";
+			lastAction++;
+		}
+		reward += hpDiff;
+		//cout << "Reward: " << reward << endl;
+		ql_->Learn(reward, new Stav(feature->to_array()), feature->get_lastAction(), false);
 		//TODO Pozor momentalne to je spravene na tu minihru s dierou ktoru ma obchadzat (natvrdo bohuzial) takze velkosti stavou nesed
-		SetFeatures(unit);		
+		SetFeatures(unit, feature);		
 		const int action = ql_->ChooseAction(false, this->state_);		
 		switch (action)
 		{
@@ -88,29 +110,47 @@ void MarineBot::OnStep()
 		default:
 			break;
 		}
-		lastAction = action;
+		feature->set_lastAction(action);
 	}
 }
 
 void MarineBot::OnGameEnd()
 {
+	//cout << "Pocet vystrelov vraj: " << lastAction << endl;
 	++restarts_;
 	if (restarts_ % 5 == 0)
 	{
-		this->ql_->Save("marine_saveQL_2f.csv");
+		this->ql_->Save("marine_saveQL.csv");
 		cout << "Ukladam po " << restarts_ << "hrach." << endl;
 	}
-	
+	reward = 0;
+	auto alliedUnits = Observation()->GetUnits(Unit::Alliance::Self);
+	for (auto unit : alliedUnits)
+	{
+		reward += unit->health*10;
+	}
+	auto enemyUnits = Observation()->GetUnits(Unit::Enemy);
+	for (auto unit : enemyUnits)
+	{
+		reward -= unit->health * 10;
+	}
 	auto vysledky = Observation()->GetResults();
 	for (auto player_result : vysledky)
 	{
+
 		if (player_result.player_id == Observation()->GetPlayerID())
 		{
 			if (player_result.result == 0)
 			{
-				reward += 1000;
+
 				cout << "Vyhral som. " /*<< this->ReportNaKonciHry()*/ << endl;
-                ql_->Learn(reward, new Stav(feature_->to_array()), lastAction, true);
+				auto units = Observation()->GetUnits(Unit::Alliance::Self);
+				for (auto unit : units)
+				{
+					auto feature = feature_[unit->tag];
+					SetFeatures(unit, feature);
+					ql_->Learn(reward, new Stav(feature->to_array()), feature->get_lastAction(), true);
+				}				
 				break;
 			}
 			cout << "Prehral som. " << endl /*<< this->ReportNaKonciHry()*/ << endl;
@@ -128,7 +168,7 @@ void MarineBot::ActionMoveBack(const Unit* unit)
     Unit* closest_unit = nullptr;
 	Units units = Observation()->GetUnits(Unit::Ally);
 	float distanceFromEnemy = GetClosestEnemy(unit, closest_unit);
-    //auto weaponRange = Observation()->GetUnitTypeData().at((*unit).unit_type).weapons[0].range;
+    auto weaponRange = Observation()->GetUnitTypeData().at((*unit).unit_type).weapons[0].range;
 	
 	/*
     if (distance == pomocna[0].range)
@@ -148,26 +188,26 @@ void MarineBot::ActionMoveBack(const Unit* unit)
     {
         if (closest_unit->pos.y > unit->pos.y)
         {
-            x = closest_unit->pos.x - abs(closest_unit->pos.x - unit->pos.x) /** (pomocna / distance)*/;
-            y = closest_unit->pos.y - abs(closest_unit->pos.y - unit->pos.y) /** (pomocna / distance)*/;
+            x = closest_unit->pos.x - abs(closest_unit->pos.x - unit->pos.x) * (weaponRange / distanceFromEnemy);
+            y = closest_unit->pos.y - abs(closest_unit->pos.y - unit->pos.y) * (weaponRange / distanceFromEnemy);
         }
         else
         {
-            x = closest_unit->pos.x - abs(closest_unit->pos.x - unit->pos.x) /** (pomocna / distance)*/;
-            y = closest_unit->pos.y + abs(closest_unit->pos.y - unit->pos.y) /** (pomocna / distance)*/;
+            x = closest_unit->pos.x - abs(closest_unit->pos.x - unit->pos.x) * (weaponRange / distanceFromEnemy);
+            y = closest_unit->pos.y + abs(closest_unit->pos.y - unit->pos.y) * (weaponRange / distanceFromEnemy);
         }
     }
     else
     {
         if (closest_unit->pos.y > unit->pos.y)
         {
-            x = closest_unit->pos.x + abs(closest_unit->pos.x - unit->pos.x) /** (pomocna / distance)*/;
-            y = closest_unit->pos.y - abs(closest_unit->pos.y - unit->pos.y) /** (pomocna / distance)*/;
+            x = closest_unit->pos.x + abs(closest_unit->pos.x - unit->pos.x) * (weaponRange / distanceFromEnemy);
+            y = closest_unit->pos.y - abs(closest_unit->pos.y - unit->pos.y) * (weaponRange / distanceFromEnemy);
         }
         else
         {
-            x = closest_unit->pos.x + abs(closest_unit->pos.x - unit->pos.x) /** (pomocna / distance)*/;
-            y = closest_unit->pos.y + abs(closest_unit->pos.y - unit->pos.y) /** (pomocna / distance)*/;
+            x = closest_unit->pos.x + abs(closest_unit->pos.x - unit->pos.x) * (weaponRange / distanceFromEnemy);
+            y = closest_unit->pos.y + abs(closest_unit->pos.y - unit->pos.y) * (weaponRange / distanceFromEnemy);
         }
     }
 	this->MoveBorderBend(unit, closest_unit, x, y, 5);		
@@ -318,13 +358,16 @@ float MarineBot::GetClosestEnemy(const Unit* source_unit, Unit*& closest_unit)
 /*
  * Nastavi vsetky featury danej jednotky.
  */
-void MarineBot::SetFeatures(const Unit* unit)
+void MarineBot::SetFeatures(const Unit* unit, MarineFeature*& feature)
 {  
 	Unit* closest_unit = nullptr;
 	float distanceFromEnemy = GetClosestEnemy(unit, closest_unit);
-	feature_->set_distanceFromClosestEnemy(distanceFromEnemy);
-	feature_->set_hp(unit->health / unit->health_max);
-	feature_->set_quadrantSafety(GetFeatureQuadrant(unit));
+	feature->set_distanceFromClosestEnemy(distanceFromEnemy);
+	feature->set_hp(unit->health / unit->health_max, unit->health);
+	feature->set_quadrantSafety(GetFeatureQuadrant(unit));
+	feature->set_weaponCD(unit->weapon_cooldown);
+	if (unit->weapon_cooldown == 0)
+		feature->set_weaponCDLastReward(0);
 }
 
 /**
@@ -378,9 +421,9 @@ void MarineBot::MoveBorderBend(const Unit* unit, const Unit* closestUnit, float&
 		if (xOffLength > yOffLength)
 		{
 			if (x < borderMin.x)
-				x = borderMin.x + 0.5;
+				x = borderMin.x + 0.5f;
 			else
-				x = borderMax.x - 0.5;
+				x = borderMax.x - 0.5f;
 			if (y < borderMin.y)
 				y = borderMin.y + 5/*(hranicaX + hranicaY) * movementSize*/;
 			else
@@ -390,9 +433,9 @@ void MarineBot::MoveBorderBend(const Unit* unit, const Unit* closestUnit, float&
 		else
 		{
 			if (y < borderMin.y)
-				y = borderMin.y + 0.5;
+				y = borderMin.y + 0.5f;
 			else
-				y = borderMax.y - 0.5;
+				y = borderMax.y - 0.5f;
 			if (x < borderMin.x)
 				x = borderMin.x + 5/*(hranicaX + hranicaY) * movementSize*/;
 			else

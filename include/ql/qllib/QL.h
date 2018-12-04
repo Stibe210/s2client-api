@@ -22,7 +22,7 @@ private:
     float EPSILONx1000 = 0.75 * 1000;//kolko ide random
     float ALPHA = 0.05;//learning rate
     float zmenaALPHA = 1;// 0.9999;
-    float zmenaEPSILON = 1;// 0.999;
+    float zmenaEPSILON = 0.999;// 0.999;
     QInit* qInit = nullptr;
 
 
@@ -48,12 +48,14 @@ public:
 	private:
 		//Obsahuje Q hodnoty akcii v danom stave
 		vector<float>* qHodnoty;
+        vector<int> pristupy;
 		public:
             QStav(int pocetAkcii, QInit* qin);
             QStav(vector<float>* qHodnoty);
             ~QStav();
             vector<float>* DajQHodnoty();		
 			int DajNajlepsiuAkciu();
+            int VyberNahodnuAkciu();
 			float DajNajvyssieQ();
 			void UpdateQ(int akcia, float cieloveQ, float gamma, int mod);
 			string toString();

@@ -33,6 +33,7 @@ class MarineBotTest2F : public sc2::Agent
 
     float GetClosestEnemy(const sc2::Unit*, sc2::Unit*&);
     int GetQuadrantIndex(const sc2::Unit*, const sc2::Unit*);
+    void save_statistics();
     
 public:
     MarineBotTest2F();

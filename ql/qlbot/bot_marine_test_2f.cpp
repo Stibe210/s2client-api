@@ -8,6 +8,7 @@
 #include <iostream>
 #include <cfloat>
 #include "sc2api/sc2_score.h"
+#include <fstream>
 
 using namespace sc2;
 using namespace std;
@@ -69,22 +70,22 @@ void MarineBotTest2F::OnStep()
 		{
 		case 0:
 			//Vypis("Akcia USTUP");
-			step = 30;
+			//step = 30;
 			this->ActionMoveBack(unit);
 			break;
 		case 1:
 			//Vypis("Akcia POHYB DOPREDU");
-			step = 100;
+			//step = 100;
 			this->ActionMoveForward(unit);
 			break;
 		case 2:
 			//Vypis("Akcia UTOC");
-			step = 100;
+			//step = 100;
 			this->ActionAttack(unit);
 			break;
 		case 3:
 			//Vypis("  Strategia POHYB DO KVADRANTU");
-			step = 30;
+			//step = 30;
 			this->ActionMoveToQuadrant(unit);
 			break;
 		default:
@@ -100,6 +101,7 @@ void MarineBotTest2F::OnGameEnd()
 	if (restarts_ % 5 == 0)
 	{
 		this->ql_->Save("marine_saveQL_2f.csv");
+        save_statistics();
 		cout << "Ukladam po " << restarts_ << "hrach." << endl;
 	}
 	
@@ -303,6 +305,18 @@ int MarineBotTest2F::GetQuadrantIndex(const Unit* middle, const Unit* unit)
 		else
 			index = 1;
 	return index;
+}
+
+void MarineBotTest2F::save_statistics()
+{
+    for (auto statistic : statistics)
+    {
+        ofstream file;
+        file.open(statistic.first + ".csv");
+        file << "sep=; \n";
+        file << statistic.second->to_csv_string();
+        file.close();
+    }
 }
 
 /*

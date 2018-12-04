@@ -95,6 +95,6 @@ int Statistic::count()
 
 string Statistic::to_csv_string()
 {
-    return ""; //TODO export na save do csv
+    return to_string(count_) + ";" + to_string(mean()) + ";" + to_string(std()) + ";\n";
 }
 

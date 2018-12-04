@@ -5,6 +5,7 @@
 #include "marine_test_feature.h"
 #include "qllib/Stav.h"
 #include "qllib/QL.h"
+#include "qlbot/statistic.h"
 
 class MarineBotTest2F : public sc2::Agent
 {
@@ -12,6 +13,7 @@ class MarineBotTest2F : public sc2::Agent
     MarineTestFeature* feature_;
     QL* ql_;
     Stav* state_;
+    map<string, Statistic*> statistics{};
 
     float reward;
     const float radiusQuadrant; //velkost radiusu kvadrantu

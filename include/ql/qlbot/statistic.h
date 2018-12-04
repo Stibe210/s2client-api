@@ -13,7 +13,7 @@ private:
     int node_counter = 0;
     double sum = 0;
     double pow_sum = 0;
-    int count = 0;
+    int count_ = 0;
     vector<Statistic*> values{};
     int save_after;
 public:
@@ -29,6 +29,7 @@ public:
     double variance();
     double std();
     void add(double value);
+    int count();
 
     string to_csv_string();
 

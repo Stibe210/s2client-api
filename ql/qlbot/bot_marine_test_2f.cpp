@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <cfloat>
+#include "sc2api/sc2_score.h"
 
 using namespace sc2;
 using namespace std;
@@ -25,8 +26,9 @@ MarineBotTest2F::MarineBotTest2F() : restarts_(0), reward(0), radiusQuadrant(5),
 	ql_->SetHyperparemeters(ALPHA, GAMMA, EPSILON);
 	//ql_->Load("marine_saveQL.csv");
     srand(time(nullptr)); ///HALO, CO TO TU ROBI TOTO?
-	
-	
+    statistics.insert({ "uspenost", new Statistic(30) });
+    statistics.insert({ "reward", new Statistic(30) });
+    statistics.insert({ "dmg", new Statistic(30) });
 }
 
 void MarineBotTest2F::OnGameStart()
@@ -106,13 +108,20 @@ void MarineBotTest2F::OnGameEnd()
 	{
 		if (player_result.player_id == Observation()->GetPlayerID())
 		{
+            double pomocna = Observation()->GetScore().score_details.total_damage_dealt.life;
+            pomocna += Observation()->GetScore().score_details.total_damage_dealt.shields;
+            statistics["dmg"]->add(pomocna);
 			if (player_result.result == 0)
 			{
-				reward += 1000;
+                statistics["uspenost"]->add(1);
+			    reward += 1000;
+                statistics["reward"]->add(reward);
 				cout << "Vyhral som. " /*<< this->ReportNaKonciHry()*/ << endl;
                 ql_->Learn(reward, new Stav(feature_->to_array()), lastAction, true);
 				break;
-			}
+			} 
+            statistics["uspenost"]->add(0);
+            statistics["reward"]->add(reward);
 			cout << "Prehral som. " << endl /*<< this->ReportNaKonciHry()*/ << endl;
 			break;
 		}

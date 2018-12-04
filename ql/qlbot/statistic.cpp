@@ -5,7 +5,7 @@ void Statistic::copy(Statistic& other)
     node_counter = other.node_counter;
     sum = other.sum;
     pow_sum = other.pow_sum;
-    count = other.count;
+    count_ = other.count_;
     values = other.values;
     save_after = other.save_after;
 }
@@ -15,7 +15,7 @@ void Statistic::copy(const Statistic& other)
     node_counter = other.node_counter;
     sum = other.sum;
     pow_sum = other.pow_sum;
-    count = other.count;
+    count_ = other.count_;
     values = other.values;
     save_after = other.save_after;
 }
@@ -56,18 +56,18 @@ void Statistic::reset()
     node_counter = 0;
     sum = 0;
     pow_sum = 0;
-    count = 0;
+    count_ = 0;
     values.clear();
 }
 
 double Statistic::mean()
 {
-    return sum / count;
+    return sum / count_;
 }
 
 double Statistic::variance()
 {
-    return (pow_sum / count) - pow(sum / count, 2);
+    return (pow_sum / count_) - pow(sum / count_, 2);
 }
 
 double Statistic::std()
@@ -77,7 +77,7 @@ double Statistic::std()
 
 void Statistic::add(double value)
 {
-    count++;
+    count_++;
     sum += value;
     pow_sum += pow(value, 2);
     node_counter++;
@@ -86,6 +86,11 @@ void Statistic::add(double value)
         values.push_back(new Statistic(*this));
         node_counter = 0;
     }
+}
+
+int Statistic::count()
+{
+    return count_;
 }
 
 string Statistic::to_csv_string()

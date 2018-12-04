@@ -53,23 +53,23 @@ int MarineFeature::get_hp()
 
 void MarineFeature::set_distanceFromClosestEnemy(float distance)
 {
-	if (distance < 2)
+	if (distance < 1)
 	{
 		distanceFromClosestEnemy = 1;
 	}
-	else if (distance < 3.5)
+	else if (distance < 2)
 	{
 		distanceFromClosestEnemy = 2;
 	}
-	else if (distance < 4.9)
+	else if (distance < 3.5)
 	{
 		distanceFromClosestEnemy = 3;
 	}
-	else if (distance < 5.1)
+	else if (distance <= 4.5)
 	{
 		distanceFromClosestEnemy = 4;
 	}
-	else if (distance < 6)
+	else if (distance < 5)
 	{
 		distanceFromClosestEnemy = 5;
 	}

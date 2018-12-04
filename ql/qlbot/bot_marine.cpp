@@ -55,6 +55,7 @@ void MarineBot::OnStep()
 	auto enemyUnits = Observation()->GetUnits(Unit::Enemy);
 	if (enemyUnits.empty()) return;
 	//cout << "Step" << endl;
+	srand(time(NULL));
 	for (auto unit : alliedUnits)
 	{			
 		/*float pomocna = Observation()->GetScore().score_details.total_damage_dealt.life;
@@ -78,7 +79,7 @@ void MarineBot::OnStep()
 			//cout << "Weapon reward-";
 			lastAction++;
 		}
-		//reward += hpDiff;
+		reward += hpDiff;
 		//cout << "Reward: " << reward << endl;
 		ql_->Learn(reward, new Stav(feature->to_array()), feature->get_lastAction(), false);
 		//TODO Pozor momentalne to je spravene na tu minihru s dierou ktoru ma obchadzat (natvrdo bohuzial) takze velkosti stavou nesed
@@ -122,15 +123,26 @@ void MarineBot::OnGameEnd()
 		this->ql_->Save("marine_saveQL.csv");
 		cout << "Ukladam po " << restarts_ << "hrach." << endl;
 	}
-	
+	reward = 0;
+	auto alliedUnits = Observation()->GetUnits(Unit::Alliance::Self);
+	for (auto unit : alliedUnits)
+	{
+		reward += unit->health*10;
+	}
+	auto enemyUnits = Observation()->GetUnits(Unit::Enemy);
+	for (auto unit : enemyUnits)
+	{
+		reward -= unit->health * 10;
+	}
 	auto vysledky = Observation()->GetResults();
 	for (auto player_result : vysledky)
 	{
+
 		if (player_result.player_id == Observation()->GetPlayerID())
 		{
 			if (player_result.result == 0)
 			{
-				reward = 100;
+
 				cout << "Vyhral som. " /*<< this->ReportNaKonciHry()*/ << endl;
 				auto units = Observation()->GetUnits(Unit::Alliance::Self);
 				for (auto unit : units)

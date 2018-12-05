@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include "qlbot/bot_marine.h"
+#include "qlbot/bot_marine_test_2f.h"
 
 
 //*************************************************************************************************
@@ -15,13 +16,13 @@ int main(int argc, char* argv[]) {
     coordinator.SetMultithreaded(true);
     // Add the custom bot, it will control the players.
     //ZealotBot zealot;
-    MarineBot marine;
+    MarineBotTest2F marine;
 
     coordinator.SetParticipants({
         CreateParticipant(sc2::Race::Terran, &marine)/*,
         //CreateParticipant(sc2::Race::Protoss, &zealot)//*/
         });
-    coordinator.SetRealtime(true);
+    //coordinator.SetRealtime(true);
     // Start the game.
     coordinator.LaunchStarcraft();
 

@@ -312,8 +312,18 @@ void MarineBotTest2F::save_statistics()
     for (auto statistic : statistics)
     {
         ofstream file;
-        file.open(statistic.first + ".csv");
-        file << "sep=; \n";
+        auto filename = statistic.first + ".csv";
+        std::ifstream ifile(filename);
+        if(!static_cast<bool>(ifile))
+        {
+            file.open(filename, std::ios_base::app);
+            file << "sep=; \n";
+        } else
+        {
+            file.open(filename, std::ios_base::app);
+        }
+        
+        
         file << statistic.second->to_csv_string();
         file.close();
     }

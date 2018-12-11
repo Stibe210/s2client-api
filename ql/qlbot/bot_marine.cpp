@@ -26,7 +26,7 @@ MarineBot::MarineBot() : restarts_(0), reward(0), radiusQuadrant(5), lastAction(
 	state_ = new Stav(new vector<int>(featureCount, 0));///TODO NATVRDO nasraaaaaat com to tu ide - zaujimavy koment
 	ql_ = new QL(state_, featureCount, actionCount, new QInit());
 	ql_->SetHyperparemeters(ALPHA, GAMMA, EPSILON);
-	//ql_->Load("marine_saveQL.csv");
+	ql_->Load("marine_saveQL.csv");
     srand(time(nullptr)); ///HALO, CO TO TU ROBI TOTO?
 	statistics.insert({ "uspenost", new Statistic(30) });
 	statistics.insert({ "reward", new Statistic(30) });
@@ -106,7 +106,7 @@ void MarineBot::OnGameEnd()
 	++restarts_;
 	if (restarts_ % 5 == 0)
 	{
-		this->ql_->Save("marine_saveQL.csv");
+		this->ql_->Save("marine_saveQL2.csv");
 		cout << "Ukladam po " << restarts_ << "hrach." << endl;
 	}
 	reward = GetGlobalReward();	

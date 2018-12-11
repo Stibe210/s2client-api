@@ -53,7 +53,7 @@ void MarineBotNoQL::OnStep()
 		int action = -1;
 		Unit* enemy = nullptr;
 		auto vzdZeal = this->GetClosestEnemy(unit, enemy);
-		if (vzdZeal < 4.5)
+		if (vzdZeal < 2)
 			action = 0;
 		else if (vzdZeal > 5)
 			action = 1;

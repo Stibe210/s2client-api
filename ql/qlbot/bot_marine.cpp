@@ -7,6 +7,9 @@
 
 #include <iostream>
 #include <cfloat>
+#include <time.h>
+#include "sc2api/sc2_score.h"
+#include <fstream>
 
 using namespace sc2;
 using namespace std;
@@ -18,15 +21,16 @@ MarineBot::MarineBot() : restarts_(0), reward(0), radiusQuadrant(5), lastAction(
 	double const EPSILON = 0.75;
 	int const featureCount = 2;
 	int const actionCount = 2;
-	
+	startTime = time(0);
 	feature_ = *new std::unordered_map<unsigned long long,MarineFeature*>;
 	state_ = new Stav(new vector<int>(featureCount, 0));///TODO NATVRDO nasraaaaaat com to tu ide - zaujimavy koment
 	ql_ = new QL(state_, featureCount, actionCount, new QInit());
 	ql_->SetHyperparemeters(ALPHA, GAMMA, EPSILON);
 	//ql_->Load("marine_saveQL.csv");
     srand(time(nullptr)); ///HALO, CO TO TU ROBI TOTO?
-	
-	
+	statistics.insert({ "uspenost", new Statistic(30) });
+	statistics.insert({ "reward", new Statistic(30) });
+	statistics.insert({ "dmg", new Statistic(30) });	
 }
 
 void MarineBot::OnGameStart()
@@ -54,56 +58,39 @@ void MarineBot::OnStep()
     if (alliedUnits.empty()) return;    
 	auto enemyUnits = Observation()->GetUnits(Unit::Enemy);
 	if (enemyUnits.empty()) return;
-	//cout << "Step" << endl;
 	srand(time(NULL));
 	for (auto unit : alliedUnits)
-	{			
-		/*float pomocna = Observation()->GetScore().score_details.total_damage_dealt.life;
-		pomocna += Observation()->GetScore().score_details.total_damage_dealt.shields;
-		pomocna += Observation()->GetScore().score_details.total_damage_dealt.energy;
-		reward = pomocna - dmg;
-		global_reward += reward;
-		*/
-		//*
-		//cout << "Tag jednotky je: " << unit->tag << endl;
-		reward = 0;
-
+	{
 		auto feature = feature_[unit->tag];
-		auto hpDiff = unit->health - feature->get_hpValue();
-
-		float weaponCDOld = feature->get_weaponCDLastReward();
-		if (unit->weapon_cooldown > weaponCDOld)
+		/*
+		reward = 0;
+		if (unit->weapon_cooldown > feature->get_weaponCDLastReward())
 		{
 			reward += Observation()->GetUnitTypeData().at((*unit).unit_type).weapons[0].damage_;
 			feature->set_weaponCDLastReward(unit->weapon_cooldown);
-			//cout << "Weapon reward-";
 			lastAction++;
 		}
-		reward += hpDiff;
-		//cout << "Reward: " << reward << endl;
+		reward += unit->health - feature->get_hpValue(); //rozdiel HPciek - momentalne - v minulom stave (tj negativna odmena)
+		*/
+		reward = GetGlobalReward(); //zakomentovany predchadzajuci kod a skuska davat globalnu odmenu ako lokalnu
 		ql_->Learn(reward, new Stav(feature->to_array()), feature->get_lastAction(), false);
-		//TODO Pozor momentalne to je spravene na tu minihru s dierou ktoru ma obchadzat (natvrdo bohuzial) takze velkosti stavou nesed
 		SetFeatures(unit, feature);		
 		const int action = ql_->ChooseAction(false, this->state_);		
 		switch (action)
 		{
 		case 0:
-			//Vypis("Akcia USTUP");
 			step = 30;
 			this->ActionMoveBack(unit);
 			break;
 		case 1:
-			//Vypis("Akcia POHYB DOPREDU");
 			step = 100;
 			this->ActionMoveForward(unit);
 			break;
 		case 2:
-			//Vypis("Akcia UTOC");
 			step = 100;
 			this->ActionAttack(unit);
 			break;
 		case 3:
-			//Vypis("  Strategia POHYB DO KVADRANTU");
 			step = 30;
 			this->ActionMoveToQuadrant(unit);
 			break;
@@ -116,33 +103,25 @@ void MarineBot::OnStep()
 
 void MarineBot::OnGameEnd()
 {
-	//cout << "Pocet vystrelov vraj: " << lastAction << endl;
 	++restarts_;
 	if (restarts_ % 5 == 0)
 	{
 		this->ql_->Save("marine_saveQL.csv");
 		cout << "Ukladam po " << restarts_ << "hrach." << endl;
 	}
-	reward = 0;
-	auto alliedUnits = Observation()->GetUnits(Unit::Alliance::Self);
-	for (auto unit : alliedUnits)
-	{
-		reward += unit->health*10;
-	}
-	auto enemyUnits = Observation()->GetUnits(Unit::Enemy);
-	for (auto unit : enemyUnits)
-	{
-		reward -= unit->health * 10;
-	}
+	reward = GetGlobalReward();	
 	auto vysledky = Observation()->GetResults();
 	for (auto player_result : vysledky)
 	{
-
 		if (player_result.player_id == Observation()->GetPlayerID())
 		{
+			double pomocna = Observation()->GetScore().score_details.total_damage_dealt.life;
+			pomocna += Observation()->GetScore().score_details.total_damage_dealt.shields;
+			statistics["dmg"]->add(pomocna);
 			if (player_result.result == 0)
 			{
-
+				statistics["uspenost"]->add(1);
+				statistics["reward"]->add(reward);
 				cout << "Vyhral som. " /*<< this->ReportNaKonciHry()*/ << endl;
 				auto units = Observation()->GetUnits(Unit::Alliance::Self);
 				for (auto unit : units)
@@ -153,6 +132,8 @@ void MarineBot::OnGameEnd()
 				}				
 				break;
 			}
+			statistics["uspenost"]->add(0);
+			statistics["reward"]->add(reward);
 			cout << "Prehral som. " << endl /*<< this->ReportNaKonciHry()*/ << endl;
 			break;
 		}
@@ -443,4 +424,41 @@ void MarineBot::MoveBorderBend(const Unit* unit, const Unit* closestUnit, float&
 		}
 	}
 
+}
+
+void MarineBot::save_statistics()
+{
+	for (auto statistic : statistics)
+	{
+		ofstream file;
+		auto filename = statistic.first + ".csv";
+		std::ifstream ifile(filename);
+		if (!static_cast<bool>(ifile))
+		{
+			file.open(filename, std::ios_base::app);
+			file << "sep=; \n";
+		}
+		else
+		{
+			file.open(filename, std::ios_base::app);
+		}
+		file << statistic.second->to_csv_string();
+		file.close();
+	}
+}
+
+float MarineBot::GetGlobalReward()
+{
+	float rewardToReturn = 0;
+	auto alliedUnits = Observation()->GetUnits(Unit::Alliance::Self);
+	for (auto unit : alliedUnits)
+		rewardToReturn += unit->health * 10 + 45;
+
+	auto enemyUnits = Observation()->GetUnits(Unit::Enemy);
+	for (auto unit : enemyUnits)
+	{
+		rewardToReturn -= unit->health * 10 - 100;
+		rewardToReturn -= unit->shield * 10;
+	}
+	return rewardToReturn;
 }

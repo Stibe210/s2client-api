@@ -172,6 +172,21 @@ void QL::Save(string path)
     string pomocna;
     pomocna = to_string(pocetFeatur) + "," + to_string(pocetAkcii) + ",\n";
     file << pomocna;
+    pomocna = "";
+    for (size_t i = 0; i < pocetFeatur; i++)
+    {
+        pomocna += 'F' + to_string(i + 1) + ',';
+    }
+    for (size_t i = 0; i < pocetAkcii; i++)
+    {
+        pomocna += 'A' + to_string(i + 1) + ',';
+    }
+    for (size_t i = 0; i < pocetAkcii; i++)
+    {
+        pomocna += 'P' + to_string(i + 1) + ',';
+    }
+    pomocna += '\n';
+    file << pomocna;
     for (std::map<Stav*, QL::QStav*, CompareStav>::iterator it = stavy->begin(); it != stavy->end(); ++it)
     {
         pomocna = it->first->toCSV() + it->second->toCSV() + "\n";
@@ -197,13 +212,15 @@ void QL::Load(string path)
     pocetAkcii = stoi(csvBlock);
     vector<float>* qHodnoty;
     vector<int>* stav;
-    
+    getline(file, line);//skipne riadok s vysvetlivkami
+
     while (getline(file, line)) {
         //getline(file, line);
         if (line.length() <= 0) {
             break;
         }
         stringstream lineStream;
+        
         lineStream << line;
         stav = new vector<int>();
         stav->resize(pocetFeatur);
@@ -213,13 +230,21 @@ void QL::Load(string path)
             (*stav)[i] = stoi(csvBlock);
         }
         qHodnoty = new vector<float>();
+        
         qHodnoty->resize(pocetAkcii);
         for (size_t i = 0; i < pocetAkcii; i++)
         {
             getline(lineStream, csvBlock, ',');
             (*qHodnoty)[i] = stof(csvBlock);
         }
-        stavyLoad->insert(make_pair(new Stav(stav), new QStav(qHodnoty)));
+
+        vector<int> prist(pocetAkcii);
+        for (size_t i = 0; i < pocetAkcii; i++)
+        {
+            getline(lineStream, csvBlock, ',');
+            prist[i] = stof(csvBlock);
+        }
+        stavyLoad->insert(make_pair(new Stav(stav), new QStav(qHodnoty,prist)));
         //stavy.insert(make_pair(Stav(stav), QStav(qHodnoty)));
     }
     file.close();
@@ -306,8 +331,9 @@ void QL::Load(string path)
 
     }
 
-    QL::QStav::QStav(vector<float>* qHod) {
+    QL::QStav::QStav(vector<float>* qHod,vector<int> prist) {
         qHodnoty = qHod;
+        pristupy = prist;
     }
 
     QL::QStav::~QStav() {
@@ -370,6 +396,10 @@ void QL::Load(string path)
         for (size_t i = 0; i < qHodnoty->size(); i++)
         {
             pom += std::to_string((*qHodnoty)[i]) + ",";
+        }
+        for (size_t i = 0; i < pristupy.size(); i++)
+        {
+            pom += std::to_string(pristupy[i]) + ",";
         }
         return pom;
     }

@@ -51,7 +51,7 @@ public:
         vector<int> pristupy;
 		public:
             QStav(int pocetAkcii, QInit* qin);
-            QStav(vector<float>* qHodnoty);
+            QStav(vector<float>* qHodnoty, vector<int> prist);
             ~QStav();
             vector<float>* DajQHodnoty();		
 			int DajNajlepsiuAkciu();

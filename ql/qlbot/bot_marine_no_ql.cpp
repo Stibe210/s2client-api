@@ -87,11 +87,13 @@ void MarineBotNoQL::OnStep()
 void MarineBotNoQL::OnGameEnd()
 {
 	++restarts_;
+	/*
 	if (restarts_ % 5 == 0)
 	{
 		this->ql_->Save("marine_savenoQL.csv");
 		cout << "Ukladam po " << restarts_ << "hrach." << endl;
-	}	
+	}
+	*/
 	auto vysledky = Observation()->GetResults();
 	for (auto player_result : vysledky)
 	{

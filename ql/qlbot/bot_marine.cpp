@@ -14,7 +14,7 @@
 using namespace sc2;
 using namespace std;
 
-MarineBot::MarineBot() : restarts_(0), reward(0), radiusQuadrant(5), lastAction(0), step(0)
+MarineBot::MarineBot() : restarts_(0), reward(0), radiusQuadrant(5), lastAction(0), step(100)
 {
 	double const GAMMA = 0.9;
 	double const ALPHA = 0.05;
@@ -54,6 +54,9 @@ void MarineBot::OnGameStart()
 
 void MarineBot::OnStep()
 {	
+    auto game_loop = Observation()->GetGameLoop();
+    if (game_loop % step != 0)
+        return;
     auto alliedUnits = Observation()->GetUnits(Unit::Alliance::Self);
     if (alliedUnits.empty()) return;    
 	auto enemyUnits = Observation()->GetUnits(Unit::Enemy);
@@ -107,6 +110,7 @@ void MarineBot::OnGameEnd()
 	if (restarts_ % 5 == 0)
 	{
 		this->ql_->Save("marine_saveQL3.csv");
+        save_statistics();
 		cout << "Ukladam po " << restarts_ << "hrach." << endl;
 	}
 	reward = GetGlobalReward();	
@@ -452,7 +456,7 @@ float MarineBot::GetGlobalReward()
 	float rewardToReturn = 0;
 	auto alliedUnits = Observation()->GetUnits(Unit::Alliance::Self);
 	for (auto unit : alliedUnits)
-		rewardToReturn += unit->health * 10 + 45;
+		rewardToReturn += unit->health * 10 + 1000;
 
 	auto enemyUnits = Observation()->GetUnits(Unit::Enemy);
 	for (auto unit : enemyUnits)

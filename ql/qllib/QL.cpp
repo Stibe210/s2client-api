@@ -198,10 +198,15 @@ void QL::Save(string path)
 
 void QL::Load(string path)
 {
-    //ak by sme chceli vediet spravit roll back 
     std::map<Stav*, QL::QStav*, CompareStav>* stavyLoad = new map <Stav*, QL::QStav*, CompareStav>();
-    ifstream file;
-    file.open(path);
+    ifstream file(path);
+
+    if (!file.good())
+    {
+        cout << "---!!!--- LOAD ERROR:";
+        cout << "Subor neexistuje alebo ho pouziva iny program.";
+        return;
+    }
     string line;
     string csvBlock;
     getline(file, csvBlock);//skip def sep

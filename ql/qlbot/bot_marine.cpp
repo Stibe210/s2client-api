@@ -21,12 +21,13 @@ MarineBot::MarineBot() : restarts_(0), reward(0), radiusQuadrant(5), lastAction(
 	double const EPSILON = 0.75;
 	int const featureCount = 2;
 	int const actionCount = 2;
-	startTime = time(0);
+	startTime = time(nullptr);
+	saveFileName = "marine_ql4";
 	feature_ = *new std::unordered_map<unsigned long long,MarineFeature*>;
 	state_ = new Stav(new vector<int>(featureCount, 0));///TODO NATVRDO nasraaaaaat com to tu ide - zaujimavy koment
 	ql_ = new QL(state_, featureCount, actionCount, new QInit());
 	ql_->SetHyperparemeters(ALPHA, GAMMA, EPSILON);
-	//ql_->Load("marine_saveQL3.csv");
+	//ql_->Load(fileName);
     srand(time(nullptr)); ///HALO, CO TO TU ROBI TOTO?
 	statistics.insert({ "uspenost", new Statistic(30) });
 	statistics.insert({ "reward", new Statistic(30) });
@@ -75,7 +76,7 @@ void MarineBot::OnStep()
 		}
 		reward += unit->health - feature->get_hpValue(); //rozdiel HPciek - momentalne - v minulom stave (tj negativna odmena)
 		*/
-		reward = GetGlobalReward(); //zakomentovany predchadzajuci kod a skuska davat globalnu odmenu ako lokalnu
+		reward = GetLocalReward(); //zakomentovany predchadzajuci kod a skuska davat globalnu odmenu ako lokalnu
 		ql_->Learn(reward, new Stav(feature->to_array()), feature->get_lastAction(), false);
 		SetFeatures(unit, feature);		
 		const int action = ql_->ChooseAction(false, this->state_);		
@@ -109,9 +110,9 @@ void MarineBot::OnGameEnd()
 	++restarts_;
 	if (restarts_ % 5 == 0)
 	{
-		this->ql_->Save("marine_saveQL3.csv");
+		this->ql_->Save(saveFileName);
         save_statistics();
-		cout << "Ukladam po " << restarts_ << "hrach." << endl;
+		cout << "Ukladam po " << restarts_ << " hrach." << endl;
 	}
 	reward = GetGlobalReward();	
 	auto vysledky = Observation()->GetResults();
@@ -410,9 +411,9 @@ void MarineBot::MoveBorderBend(const Unit* unit, const Unit* closestUnit, float&
 			else
 				x = borderMax.x - 0.5f;
 			if (y < borderMin.y)
-				y = borderMin.y + 5/*(hranicaX + hranicaY) * movementSize*/;
+				y = borderMin.y + movementSize;
 			else
-				y = borderMax.y- 5/*(hranicaX + hranicaY) * movementSize*/;
+				y = borderMax.y- movementSize;
 
 		}
 		else
@@ -422,9 +423,9 @@ void MarineBot::MoveBorderBend(const Unit* unit, const Unit* closestUnit, float&
 			else
 				y = borderMax.y - 0.5f;
 			if (x < borderMin.x)
-				x = borderMin.x + 5/*(hranicaX + hranicaY) * movementSize*/;
+				x = borderMin.x + movementSize;
 			else
-				x = borderMax.x - 5/*(hranicaX + hranicaY) * movementSize*/;
+				x = borderMax.x - movementSize;
 		}
 	}
 
@@ -453,16 +454,21 @@ void MarineBot::save_statistics()
 
 float MarineBot::GetGlobalReward()
 {
+	return GetLocalReward() * 100;
+}
+
+float MarineBot::GetLocalReward()
+{
 	float rewardToReturn = 0;
 	auto alliedUnits = Observation()->GetUnits(Unit::Alliance::Self);
 	for (auto unit : alliedUnits)
-		rewardToReturn += unit->health * 10 + 1000;
+		rewardToReturn += unit->health + 90; //marine ma 45 hp, konstantou prikladavame vacsiu dolezitost na to, ci je marine zivy, ako to, kolko ma hp
 
 	auto enemyUnits = Observation()->GetUnits(Unit::Enemy);
 	for (auto unit : enemyUnits)
 	{
-		rewardToReturn -= unit->health * 10 - 100;
-		rewardToReturn -= unit->shield * 10;
+		rewardToReturn -= (unit->health + 130); //zealot ma cca 150 hp aj so shieldom, tak trosku menej nech neni su zaporne rewardy
+		rewardToReturn -= (unit->shield);
 	}
 	return rewardToReturn;
 }

@@ -20,6 +20,7 @@ class MarineBot : public sc2::Agent
     int lastAction;
     int step;
     time_t startTime;
+    string saveFileName;
     void SetFeatures(const sc2::Unit*, MarineFeature*&);
     
     float* GetFeatureQuadrant(const sc2::Unit*);
@@ -35,6 +36,7 @@ class MarineBot : public sc2::Agent
     int GetQuadrantIndex(const sc2::Unit*, const sc2::Unit*);
     void save_statistics();
     float GetGlobalReward();
+    float GetLocalReward();
     
 public:
     MarineBot();

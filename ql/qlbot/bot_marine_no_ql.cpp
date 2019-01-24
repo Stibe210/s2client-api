@@ -16,21 +16,16 @@ using namespace std;
 
 MarineBotNoQL::MarineBotNoQL()
 {
-	step = 1;
-	lastAction = 0;
-	restarts_ = 0;
-	reward = 0;
+	step = 10;
 	//radiusQuadrant = 5;
-
-    srand(time(nullptr)); ///HALO, CO TO TU ROBI TOTO?
+	restarts_ = 0;
 	statistics.insert({ "uspenost", new Statistic(30) });
-	statistics.insert({ "reward", new Statistic(30) });
 	statistics.insert({ "dmg", new Statistic(30) });	
 }
 
 void MarineBotNoQL::OnGameStart()
 {
-    std::cout << "Starting a new game (" << restarts_ << " restarts)" << std::endl;
+    std::cout << "Starting a new game (" << ++restarts_ << " restarts)" << std::endl;
 	Debug()->DebugMoveCamera(*new Point2D(
 		Observation()->GetGameInfo().playable_min.x + (Observation()->GetGameInfo().playable_max.x - Observation()->GetGameInfo().playable_min.x) / 2,
 		Observation()->GetGameInfo().playable_min.y + (Observation()->GetGameInfo().playable_max.y - Observation()->GetGameInfo().playable_min.y) / 2 - 4
@@ -40,8 +35,7 @@ void MarineBotNoQL::OnGameStart()
 
 void MarineBotNoQL::OnStep()
 {	
-	step--;
-	if (step != 0)
+	if (Observation()->GetGameLoop() % step != 0)
 		return;
     auto alliedUnits = Observation()->GetUnits(Unit::Alliance::Self);
     if (alliedUnits.empty()) return;    
@@ -58,24 +52,23 @@ void MarineBotNoQL::OnStep()
 		else if (vzdZeal > 5)
 			action = 1;
 		else
-			action = 2;
-			
+			action = 2;			
 		switch (action)
 		{
 		case 0:
-			step = 30;
+			step = 10;
 			this->ActionMoveBack(unit);
 			break;
 		case 1:
-			step = 30;
+			step = 10;
 			this->ActionMoveForward(unit);
 			break;
 		case 2:
-			step = 30;
+			step = 10;
 			this->ActionAttack(unit);
 			break;
 		case 3:
-			step = 30;
+			step = 10;
 			this->ActionMoveToQuadrant(unit);
 			break;
 		default:
@@ -86,14 +79,6 @@ void MarineBotNoQL::OnStep()
 
 void MarineBotNoQL::OnGameEnd()
 {
-	++restarts_;
-	/*
-	if (restarts_ % 5 == 0)
-	{
-		this->ql_->Save("marine_savenoQL.csv");
-		cout << "Ukladam po " << restarts_ << "hrach." << endl;
-	}
-	*/
 	auto vysledky = Observation()->GetResults();
 	for (auto player_result : vysledky)
 	{
@@ -102,16 +87,15 @@ void MarineBotNoQL::OnGameEnd()
 			double pomocna = Observation()->GetScore().score_details.total_damage_dealt.life;
 			pomocna += Observation()->GetScore().score_details.total_damage_dealt.shields;
 			statistics["dmg"]->add(pomocna);
+			cout << pomocna << " dmg" << endl;
 			if (player_result.result == 0)
 			{
 				statistics["uspenost"]->add(1);
-				statistics["reward"]->add(reward);
-				cout << "Vyhral som. " /*<< this->ReportNaKonciHry()*/ << endl;		
+				cout << "Vyhral som. " << endl;		
 				break;
 			}
 			statistics["uspenost"]->add(0);
-			statistics["reward"]->add(reward);
-			cout << "Prehral som. " << endl /*<< this->ReportNaKonciHry()*/ << endl;
+			cout << "Prehral som. " << endl;
 			break;
 		}
 	}

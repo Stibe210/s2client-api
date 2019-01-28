@@ -43,5 +43,7 @@ public:
     string ReportNaKonciHry();
     //vector<int>* DajStav();
     ~ZealotBot();
-
+private:
+    void EndGame();
+    void StartGame();
 };

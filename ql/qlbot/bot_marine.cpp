@@ -22,7 +22,7 @@ MarineBot::MarineBot() : restarts_(0), reward(0), radiusQuadrant(5), lastAction(
 	int const featureCount = 2;
 	int const actionCount = 2;
 	startTime = time(nullptr);
-	saveFileName = "marine_ql4";
+	saveFileName = "marine_ql6";
 	feature_ = *new std::unordered_map<unsigned long long,MarineFeature*>;
 	state_ = new Stav(new vector<int>(featureCount, 0));///TODO NATVRDO nasraaaaaat com to tu ide - zaujimavy koment
 	ql_ = new QL(state_, featureCount, actionCount, new QInit());
@@ -436,7 +436,7 @@ void MarineBot::save_statistics()
 	for (auto statistic : statistics)
 	{
 		ofstream file;
-		auto filename = statistic.first + ".csv";
+		auto filename = saveFileName + statistic.first + ".csv";
 		std::ifstream ifile(filename);
 		if (!static_cast<bool>(ifile))
 		{
@@ -462,13 +462,13 @@ float MarineBot::GetLocalReward()
 	float rewardToReturn = 0;
 	auto alliedUnits = Observation()->GetUnits(Unit::Alliance::Self);
 	for (auto unit : alliedUnits)
-		rewardToReturn += unit->health + 90; //marine ma 45 hp, konstantou prikladavame vacsiu dolezitost na to, ci je marine zivy, ako to, kolko ma hp
+		rewardToReturn += unit->health + 450; //marine ma 45 hp, konstantou prikladavame vacsiu dolezitost na to, ci je marine zivy, ako to, kolko ma hp
 
 	auto enemyUnits = Observation()->GetUnits(Unit::Enemy);
 	for (auto unit : enemyUnits)
 	{
-		rewardToReturn -= (unit->health + 130); //zealot ma cca 150 hp aj so shieldom, tak trosku menej nech neni su zaporne rewardy
-		rewardToReturn -= (unit->shield);
+		rewardToReturn -= unit->health + 900; //zealot ma cca 150 hp aj so shieldom, tak trosku menej nech neni su zaporne rewardy
+		rewardToReturn -= unit->shield;
 	}
 	return rewardToReturn;
 }

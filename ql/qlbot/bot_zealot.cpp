@@ -26,7 +26,7 @@ ZealotBot::ZealotBot(int count) :
     state_ = new Stav(new vector<int>(8, 0));///TODO NATVRDO nasraaaaaat com to tu ide
     ql_ = new QL(state_, 8,3, new QInitZealot());
     ql_->SetHyperparemeters(ALPHA, GAMMA, EPSILON);
-    ql_->Load("saveQL.csv");
+    //ql_->Load("saveQL.csv");
     printf("Nacitane snad ");
 }
 

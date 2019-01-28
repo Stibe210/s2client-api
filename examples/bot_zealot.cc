@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
     // Add the custom bot, it will control the players.
     //ZealotBot zealot(1);
     ZealotBot zealot1;
-    ZealotBot zealot2;
+    MarineBot zealot2;
 
     FooBot human;
     coordinator.SetParticipants({

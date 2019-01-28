@@ -26,7 +26,7 @@ ZealotBot::ZealotBot(int count) :
     state_ = new Stav(new vector<int>(8, 0));///TODO NATVRDO nasraaaaaat com to tu ide
     ql_ = new QL(state_, 8,3, new QInitZealot());
     ql_->SetHyperparemeters(ALPHA, GAMMA, EPSILON);
-    ql_->Load("saveQL.csv");
+    //ql_->Load("saveQL.csv");
     printf("Nacitane snad ");
 }
 
@@ -59,11 +59,11 @@ void ZealotBot::OnGameStart()
         return;
     }
     get_state(*units[0]);
-    for (auto i = 0; i < start_count; i++)
+    /*for (auto i = 0; i < start_count; i++)
         Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::PROTOSS_ZEALOT, units[0]->pos, Observation()->GetPlayerID());
-    hp = units[0]->health;
+    */hp = units[0]->health;
     shield = units[0]->shield;
-    Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::PROTOSS_ZEALOT, units[0]->pos, Observation()->GetPlayerID());
+    //Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::PROTOSS_ZEALOT, units[0]->pos, Observation()->GetPlayerID());
     Debug()->SendDebug();
 }
 

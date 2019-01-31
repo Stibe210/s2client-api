@@ -19,15 +19,15 @@ MarineBot::MarineBot() : restarts_(0), reward(0), radiusQuadrant(5), lastAction(
 	double const GAMMA = 0.95;
 	double const ALPHA = 0.05;
 	double const EPSILON = 0.8;
-	int const featureCount = 2;
+	int const featureCount = 3;
 	int const actionCount = 2;
 	startTime = time(nullptr);
-	saveFileName = "marine_ql4_x5unitcountlowglobal";
+	saveFileName = "marine_ql8_marineCountFixed";
 	feature_ = *new std::unordered_map<unsigned long long,MarineFeature*>;
 	state_ = new Stav(new vector<int>(featureCount, 0));///TODO NATVRDO nasraaaaaat com to tu ide - zaujimavy koment
 	ql_ = new QL(state_, featureCount, actionCount, new QInit());
 	ql_->SetHyperparemeters(ALPHA, GAMMA, EPSILON);
-	ql_->Load(saveFileName);
+	//ql_->Load(saveFileName + ".csv");
     srand(time(nullptr)); ///HALO, CO TO TU ROBI TOTO?
 	statistics.insert({ "uspenost", new Statistic(30) });
 	statistics.insert({ "reward", new Statistic(30) });
@@ -110,7 +110,7 @@ void MarineBot::OnGameEnd()
 	++restarts_;
 	if (restarts_ % 5 == 0)
 	{
-		this->ql_->Save(saveFileName);
+		this->ql_->Save(saveFileName + ".csv");
         save_statistics();
 		cout << "Ukladam po " << restarts_ << " hrach." << endl;
 	}
@@ -348,6 +348,11 @@ void MarineBot::SetFeatures(const Unit* unit, MarineFeature*& feature)
 {  
 	Unit* closest_unit = nullptr;
 	float distanceFromEnemy = GetClosestEnemy(unit, closest_unit);
+	auto alliedUnits = Observation()->GetUnits(Unit::Alliance::Self);
+	int unitCounter = 0;
+	for (auto unit : alliedUnits)	
+		unitCounter++;	
+	feature->set_marineCount(unitCounter);
 	feature->set_distanceFromClosestEnemy(distanceFromEnemy);
 	feature->set_hp(unit->health / unit->health_max, unit->health);
 	feature->set_quadrantSafety(GetFeatureQuadrant(unit));

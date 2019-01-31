@@ -1,12 +1,12 @@
 #include "qlbot/marine_feature.h"
 
 
-MarineFeature::MarineFeature(int paFeatureCount) : hp(0), distanceFromClosestEnemy(0), featureCount(paFeatureCount), lastAction(-1), hpValue(0), weaponCD(0)
+MarineFeature::MarineFeature(int paFeatureCount) : hp(0), marineCount(0), distanceFromClosestEnemy(0), featureCount(paFeatureCount), lastAction(-1), hpValue(0), weaponCD(0)
 {
 	quadrantSafety = new int[4] {0, 0, 0, 0};
 }
 
-MarineFeature::MarineFeature() : hp(0), distanceFromClosestEnemy(0), featureCount(2), lastAction(-1), hpValue(0), weaponCD(0)
+MarineFeature::MarineFeature() : hp(0), distanceFromClosestEnemy(0), featureCount(3), lastAction(-1), hpValue(0), weaponCD(0)
 {
 	quadrantSafety = new int[4]{ 0, 0, 0, 0 };
 }
@@ -15,9 +15,9 @@ MarineFeature::~MarineFeature()
 {
 }
 
-void MarineFeature::set_hp(float hpPer, float hp)
+void MarineFeature::set_hp(float hpPer, float health)
 {
-	hpValue = hp;
+	hpValue = health;
     //skuska prikladat mensiemu hp velku dolezitost
     if (hpPer < 0.1)
     {
@@ -130,8 +130,8 @@ vector<int>* MarineFeature::to_array()
     pole->resize(featureCount);
     (*pole)[0] = hp;
     (*pole)[1] = distanceFromClosestEnemy;
-	/*(*pole)[2] = hp3;
-    (*pole)[3] = vzd1odNepriatela;
+	(*pole)[2] = marineCount;
+    /*(*pole)[3] = vzd1odNepriatela;
     (*pole)[4] = vzd2odNepriatela;
 	(*pole)[5] = vzd3odNepriatela;
 	(*pole)[6] = quadrantSafety[0];
@@ -174,5 +174,15 @@ void MarineFeature::set_weaponCDLastReward(float cd)
 float MarineFeature::get_weaponCDLastReward()
 {
 	return weaponCDLastReward;
+}
+
+void MarineFeature::set_marineCount(int count)
+{
+	marineCount = count;
+}
+
+int MarineFeature::get_marineCount()
+{
+	return marineCount;
 }
 

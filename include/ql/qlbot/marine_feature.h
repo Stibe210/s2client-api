@@ -7,6 +7,7 @@ class MarineFeature
 {
 private:
     int hp;
+    int marineCount;
     int distanceFromClosestEnemy;
     int* quadrantSafety;
     int featureCount;
@@ -21,7 +22,9 @@ public:
     MarineFeature();
     ~MarineFeature();
 
-    void set_hp(float hpPer, float hp);
+    void set_marineCount(int count);
+    int get_marineCount();
+    void set_hp(float, float);
     int get_hp();
     void set_distanceFromClosestEnemy(float distance);
     int get_distanceFromClosestEnemy();

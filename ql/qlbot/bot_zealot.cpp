@@ -53,10 +53,10 @@ void ZealotBot::StartGame()
                 Debug()->DebugKillUnit(unit);
             }
         }
-        //Debug()->SendDebug();
+        auto start = Observation()->GetGameInfo().start_locations.back();
         for (auto i = 0; i < start_count; i++)
         {
-            Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::PROTOSS_ZEALOT, Observation()->GetStartLocation(), Observation()->GetPlayerID());
+            Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::PROTOSS_ZEALOT, start, Observation()->GetPlayerID());
         }
         Debug()->SendDebug();
     }
@@ -184,15 +184,13 @@ void ZealotBot::OnStep()
         }
     }
 
-    /*
-    if (game_loop % 100 == 0) {
-    sc2::Units units = Observation()->GetUnits(sc2::Unit::Alliance::Self);
-    for (auto& it_unit : units) {
-
-    sc2::Point2D target = sc2::FindRandomLocation(Observation()->GetGameInfo());
-    Actions()->UnitCommand(it_unit, sc2::ABILITY_ID::SMART, target);
-    }
-    }*/
+    auto start = Observation()->GetStartLocation();
+    auto upper_left = new sc2::Point3D(15.5 - 2, 18 - 2, 0);
+    auto lower_right = new sc2::Point3D(15.5 + 2, 18 + 2, 1);
+    //auto upper_left = new sc2::Point3D(start.x - 2, start.y - 2, 0);
+    //auto lower_right = new sc2::Point3D(start.x + 2, start.y + 2, 1);
+    Debug()->DebugBoxOut(*upper_left, *lower_right, sc2::Colors::Red);
+    Debug()->SendDebug();
 }
 
 void ZealotBot::UlozNaucene()

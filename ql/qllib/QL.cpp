@@ -300,13 +300,13 @@ void QL::Load(string path)
     {
         //prejde vsetky pristupy a spocita nulove
         int pocetNulovychPristupov = 0;
-        int indexPoslednehoNenuloveho = 0;
-        for (size_t i = 1; i < pristupy.size(); i++)
+        int indexPoslednehoNuloveho = 0;
+        for (size_t i = 0; i < pristupy.size(); i++)
         {
             if (pristupy[i] == 0)
             {
                 pocetNulovychPristupov++;
-                indexPoslednehoNenuloveho = i;
+                indexPoslednehoNuloveho = i;
             }
         }
         //ak je len jeden tak vrati ten
@@ -318,8 +318,8 @@ void QL::Load(string path)
         }
         else if (pocetNulovychPristupov == 1)
         {
-            pristupy[indexPoslednehoNenuloveho]++;
-            return indexPoslednehoNenuloveho;
+            pristupy[indexPoslednehoNuloveho]++;
+            return indexPoslednehoNuloveho;
         }
         else
         {
@@ -358,6 +358,7 @@ void QL::Load(string path)
 				hodnota = (*qHodnoty)[i];
 			}
 		}
+        pristupy[index]++;
 		return index;
 	}
 	float QL::QStav::DajNajvyssieQ() {

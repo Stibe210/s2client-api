@@ -79,15 +79,8 @@ void MarineBot::OnStep()
 		reward = GetLocalReward(); //zakomentovany predchadzajuci kod a skuska davat globalnu odmenu ako lokalnu
 		ql_->Learn(reward, new Stav(feature->to_array()), feature->get_lastAction(), false);
 		SetFeatures(unit, feature);		
-		const int action = ql_->ChooseAction(false, this->state_);
-        cout << "DEBUG INFO --------------------------------" << endl;
-        cout << "vektor stavu v ktorov volas choose action:" << endl;
-        cout << this->state_->toCSV() << endl;
-        cout << "Pokial volas choose action na stave 0,0,0, proste zaciatocny stav" << endl;
-        cout << "Bude tam davat aj pristupy nakolko si mysli ze si v tom stave a podla toho ti aj vybera akciu" << endl;
-        cout << "Akcia sa vybera podla nahody bud najlepsia alebo nahodna zaroven su tam pravidla aby sa vyberala najma ta ktora sa volala malo" << endl;
-        cout << "Vzhladom na to ze vzdy mi tu vypise tento vektor ako 0,0,0 usudzujem ze chyba je niekde tunak" << endl;
-        cout << "DEBUG INFO --------------------------------" << endl;
+		//const int action = ql_->ChooseAction(false, this->state_);
+        const int action = ql_->ChooseAction(false, new Stav(feature->to_array()));
 		switch (action)
 		{
 		case 0:

@@ -16,18 +16,18 @@ using namespace std;
 
 MarineBot::MarineBot() : restarts_(0), reward(0), radiusQuadrant(5), lastAction(0), step(100)
 {
-	double const GAMMA = 0.9;
+	double const GAMMA = 0.95;
 	double const ALPHA = 0.05;
-	double const EPSILON = 0.75;
+	double const EPSILON = 0.8;
 	int const featureCount = 2;
 	int const actionCount = 2;
 	startTime = time(nullptr);
-	saveFileName = "marine_ql6";
+	saveFileName = "marine_ql4_x5unitcountlowglobal";
 	feature_ = *new std::unordered_map<unsigned long long,MarineFeature*>;
 	state_ = new Stav(new vector<int>(featureCount, 0));///TODO NATVRDO nasraaaaaat com to tu ide - zaujimavy koment
 	ql_ = new QL(state_, featureCount, actionCount, new QInit());
 	ql_->SetHyperparemeters(ALPHA, GAMMA, EPSILON);
-	//ql_->Load(fileName);
+	ql_->Load(saveFileName);
     srand(time(nullptr)); ///HALO, CO TO TU ROBI TOTO?
 	statistics.insert({ "uspenost", new Statistic(30) });
 	statistics.insert({ "reward", new Statistic(30) });
@@ -454,7 +454,7 @@ void MarineBot::save_statistics()
 
 float MarineBot::GetGlobalReward()
 {
-	return GetLocalReward() * 100;
+	return GetLocalReward() * 10;
 }
 
 float MarineBot::GetLocalReward()

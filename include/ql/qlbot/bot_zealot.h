@@ -8,6 +8,7 @@
 using namespace std;
 class ZealotBot : public sc2::Agent
 {
+    bool is_restarting = false;
     double ALPHA;
     double GAMMA;
     double EPSILON;

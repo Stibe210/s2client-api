@@ -40,10 +40,11 @@ void ZealotBot::Vypis(std::string sprava)
 
 void ZealotBot::StartGame()
 {
+
     reward = 0;
     global_reward = 0;
     sc2::Units units = Observation()->GetUnits(sc2::Unit::Alliance::Self);
-    if (restarts_ == 0)
+    if (restarts_ != 0)
     {
         if (!units.empty())
         {
@@ -52,24 +53,29 @@ void ZealotBot::StartGame()
                 Debug()->DebugKillUnit(unit);
             }
         }
-        Debug()->SendDebug();
+        auto start = Observation()->GetGameInfo().start_locations.back();
         for (auto i = 0; i < start_count; i++)
-            Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::PROTOSS_ZEALOT, Observation()->GetStartLocation(), Observation()->GetPlayerID());
+        {
+            Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::PROTOSS_ZEALOT, start, Observation()->GetPlayerID());
+        }
         Debug()->SendDebug();
     }
-    get_state(*units[0]);
-    hp = units[0]->health;
-    shield = units[0]->shield;
+    Debug()->DebugShowMap();
+    Debug()->SendDebug();
+    
+    
 }
 
 void ZealotBot::OnGameStart()
 {
 
     std::cout << "Starting a new game (" << restarts_ << " restarts)" << std::endl;
-    Debug()->DebugEnemyControl();
+    //Debug()->DebugEnemyControl();
     Debug()->DebugShowMap();
     Debug()->SendDebug();
     StartGame();
+    auto units = Observation()->GetUnits(sc2::Unit::Alliance::Self);
+    get_state(*units[0]);
     //dmg = Observation()->GetScore().score_details.total_damage_dealt.life;
     //dmg += Observation()->GetScore().score_details.total_damage_dealt.shields;
     //dmg += Observation()->GetScore().score_details.total_damage_dealt.energy;
@@ -102,18 +108,30 @@ void ZealotBot::OnStep()
     //Observation()->GetScore().score_details.killed_minerals;
     //OnUnitDestroyed();
     sc2::Units units = Observation()->GetUnits(sc2::Unit::Alliance::Self);
-    auto enemy_units = Observation()->GetUnits(sc2::Unit::Alliance::Enemy);
-    if (units.empty() || enemy_units.empty())
+    if (game_loop % 10 == 0)
     {
-        EndGame();
-        StartGame();
-        return;
+        auto enemy_units = Observation()->GetUnits(sc2::Unit::Alliance::Enemy);
+        if ((units.empty() || enemy_units.empty()) && !is_restarting)
+        {
+            is_restarting = true;
+            EndGame();
+            StartGame();
+            is_restarting = false;
+            return;
+        }
+        if (is_restarting)
+        {
+            //cout << "asd" << endl;
+            return;
+        }
     }
     
-    Debug()->DebugMoveCamera(units[0]->pos);
-    Debug()->SendDebug();
+    
     if (game_loop % step == 0)
     {
+        
+        Debug()->DebugMoveCamera(units[0]->pos);
+        Debug()->SendDebug();
         float pomocna = Observation()->GetScore().score_details.total_damage_dealt.life;
         pomocna += Observation()->GetScore().score_details.total_damage_dealt.shields;
         pomocna += Observation()->GetScore().score_details.total_damage_dealt.energy;
@@ -166,15 +184,13 @@ void ZealotBot::OnStep()
         }
     }
 
-    /*
-    if (game_loop % 100 == 0) {
-    sc2::Units units = Observation()->GetUnits(sc2::Unit::Alliance::Self);
-    for (auto& it_unit : units) {
-
-    sc2::Point2D target = sc2::FindRandomLocation(Observation()->GetGameInfo());
-    Actions()->UnitCommand(it_unit, sc2::ABILITY_ID::SMART, target);
-    }
-    }*/
+    auto start = Observation()->GetStartLocation();
+    auto upper_left = new sc2::Point3D(15.5 - 2, 18 - 2, 0);
+    auto lower_right = new sc2::Point3D(15.5 + 2, 18 + 2, 1);
+    //auto upper_left = new sc2::Point3D(start.x - 2, start.y - 2, 0);
+    //auto lower_right = new sc2::Point3D(start.x + 2, start.y + 2, 1);
+    Debug()->DebugBoxOut(*upper_left, *lower_right, sc2::Colors::Red);
+    Debug()->SendDebug();
 }
 
 void ZealotBot::UlozNaucene()

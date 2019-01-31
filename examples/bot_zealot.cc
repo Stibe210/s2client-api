@@ -59,8 +59,8 @@ int main(int argc, char* argv[]) {
     coordinator.SetMultithreaded(true);
     // Add the custom bot, it will control the players.
     //ZealotBot zealot(1);
-    ZealotBot zealot1;
-    MarineBot zealot2;
+    ZealotBot zealot1(1);
+    ZealotBot zealot2(2);
 
     FooBot human;
     coordinator.SetParticipants({
@@ -75,7 +75,7 @@ int main(int argc, char* argv[]) {
     // Step forward the game simulation.
     bool do_break = false;
     while (!do_break) {
-        coordinator.StartGame(sc2::kMapSmallMap);
+        coordinator.StartGame(sc2::kMapSmallMap2);
         while (coordinator.Update() && !do_break) {
             if (sc2::PollKeyPress()) {
                 std::cout << "Koncim cyklus" << std::endl;

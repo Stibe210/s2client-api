@@ -38,34 +38,62 @@ void ZealotBot::Vypis(std::string sprava)
     }
 }
 
+void ZealotBot::StartGame()
+{
+    reward = 0;
+    global_reward = 0;
+    sc2::Units units = Observation()->GetUnits(sc2::Unit::Alliance::Self);
+    if (restarts_ == 0)
+    {
+        if (!units.empty())
+        {
+            for (auto unit : units)
+            {
+                Debug()->DebugKillUnit(unit);
+            }
+        }
+        Debug()->SendDebug();
+        for (auto i = 0; i < start_count; i++)
+            Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::PROTOSS_ZEALOT, Observation()->GetStartLocation(), Observation()->GetPlayerID());
+        Debug()->SendDebug();
+    }
+    get_state(*units[0]);
+    hp = units[0]->health;
+    shield = units[0]->shield;
+}
+
 void ZealotBot::OnGameStart()
 {
 
     std::cout << "Starting a new game (" << restarts_ << " restarts)" << std::endl;
-    
-    dmg = Observation()->GetScore().score_details.total_damage_dealt.life;
-    dmg += Observation()->GetScore().score_details.total_damage_dealt.shields;
-    dmg += Observation()->GetScore().score_details.total_damage_dealt.energy;
-    reward = dmg;
-    global_reward = reward;
-    sc2::Units units = Observation()->GetUnits(sc2::Unit::Alliance::Self);
-    
-    //cout << Observation()->GetUnitTypeData().at(static_cast<int>(sc2::UNIT_TYPEID::PROTOSS_ZEALOT)).weapons.at(0).damage_ << endl;
-    //cout << Observation()->GetUnitTypeData().at(static_cast<int>(sc2::UNIT_TYPEID::PROTOSS_ZEALOT)).movement_speed << endl;
-    //cout << Observation()->GetUnitTypeData().at(static_cast<int>(sc2::UNIT_TYPEID::TERRAN_MARINE)).movement_speed << endl;
-
-    if (units.empty())
-    {
-        return;
-    }
-    get_state(*units[0]);
-    /*for (auto i = 0; i < start_count; i++)
-        Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::PROTOSS_ZEALOT, units[0]->pos, Observation()->GetPlayerID());
-    */hp = units[0]->health;
-    shield = units[0]->shield;
-    //Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::PROTOSS_ZEALOT, units[0]->pos, Observation()->GetPlayerID());
+    Debug()->DebugEnemyControl();
+    Debug()->DebugShowMap();
     Debug()->SendDebug();
+    StartGame();
+    //dmg = Observation()->GetScore().score_details.total_damage_dealt.life;
+    //dmg += Observation()->GetScore().score_details.total_damage_dealt.shields;
+    //dmg += Observation()->GetScore().score_details.total_damage_dealt.energy;
+    //reward = dmg;
+    //global_reward = reward;
+    //sc2::Units units = Observation()->GetUnits(sc2::Unit::Alliance::Self);
+    //
+    ////cout << Observation()->GetUnitTypeData().at(static_cast<int>(sc2::UNIT_TYPEID::PROTOSS_ZEALOT)).weapons.at(0).damage_ << endl;
+    ////cout << Observation()->GetUnitTypeData().at(static_cast<int>(sc2::UNIT_TYPEID::PROTOSS_ZEALOT)).movement_speed << endl;
+    ////cout << Observation()->GetUnitTypeData().at(static_cast<int>(sc2::UNIT_TYPEID::TERRAN_MARINE)).movement_speed << endl;
+
+    //if (units.empty())
+    //{
+    //    return;
+    //}
+    //get_state(*units[0]);
+    //for (auto i = 0; i < start_count; i++)
+    //    Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::PROTOSS_ZEALOT, units[0]->pos, Observation()->GetPlayerID());
+    //hp = units[0]->health;
+    //shield = units[0]->shield;
+    //Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::PROTOSS_ZEALOT, units[0]->pos, Observation()->GetPlayerID());
+    //Debug()->SendDebug();
 }
+
 
 void ZealotBot::OnStep()
 {
@@ -74,10 +102,14 @@ void ZealotBot::OnStep()
     //Observation()->GetScore().score_details.killed_minerals;
     //OnUnitDestroyed();
     sc2::Units units = Observation()->GetUnits(sc2::Unit::Alliance::Self);
-    if (units.empty())
+    auto enemy_units = Observation()->GetUnits(sc2::Unit::Alliance::Enemy);
+    if (units.empty() || enemy_units.empty())
     {
+        EndGame();
+        StartGame();
         return;
     }
+    
     Debug()->DebugMoveCamera(units[0]->pos);
     Debug()->SendDebug();
     if (game_loop % step == 0)
@@ -180,6 +212,31 @@ void ZealotBot::OnUnitDestroyed(const sc2::Unit* unit)
 
 }*/
 
+
+void ZealotBot::EndGame()
+{
+    ++restarts_;
+    if (restarts_ % 10 == 0)
+    {
+        this->UlozNaucene();
+        //Priebezne uklada to je asi len docasne alebo sa potom zvacsi interval
+        //ak by padlo a podobne
+        cout << "\n Ukladam.\n" << endl;
+    }
+    //cout << Observation()->GetUnitTypeData().at(static_cast<int>(sc2::UNIT_TYPEID::PROTOSS_ZEALOT)).l;
+    sc2::Units units = Observation()->GetUnits(sc2::Unit::Alliance::Self);
+    if (!units.empty())
+    {
+        reward += 1000;
+        global_reward += reward;
+        cout << "Vyhral som. " << this->ReportNaKonciHry() << endl;
+        ql_->Learn(reward, new Stav(zstav_->to_array()), lastAction, false);
+        return;
+    }
+    cout << "Prehral som. " << endl << this->ReportNaKonciHry() << endl;
+}
+
+
 void ZealotBot::OnGameEnd()
 {
     //sc2::Units units = Observation()->GetUnits(sc2::Unit::Alliance::Self);
@@ -193,33 +250,7 @@ void ZealotBot::OnGameEnd()
     //        //Debug()->SendDebug();
     //    }
     //}
-    ++restarts_;
-    if (restarts_ % 10 == 0)
-    {
-        this->UlozNaucene();
-        //Priebezne uklada to je asi len docasne alebo sa potom zvacsi interval
-        //ak by padlo a podobne
-        cout << "\n Ukladam.\n" << endl;
-    }
-    //cout << Observation()->GetUnitTypeData().at(static_cast<int>(sc2::UNIT_TYPEID::PROTOSS_ZEALOT)).l;
-
-    auto vysledky = Observation()->GetResults();
-    for (auto player_result : vysledky)
-    {
-        if (player_result.player_id == Observation()->GetPlayerID())
-        {
-            if (player_result.result == 0)
-            {
-                reward += 1000;
-                global_reward += reward;
-                cout << "Vyhral som. " << this->ReportNaKonciHry()<< endl;
-                ql_->Learn(reward, new Stav(zstav_->to_array()), lastAction, false);
-                break;
-            }
-            cout << "Prehral som. " << endl << this->ReportNaKonciHry() << endl;
-            break;
-        }
-    }
+    EndGame();
     std::cout << "Game ended after: " << Observation()->GetGameLoop() << " loops " << std::endl;
 }
 
@@ -402,6 +433,8 @@ ZealotBot::~ZealotBot()
     delete zstav_;
     zstav_ = nullptr;
 }
+
+
 
 void ZealotBot::HladajNepriatela(const sc2::Unit* unit)
 {

@@ -10,12 +10,17 @@ class MarineBot : public sc2::Agent
 {
     protected:
     uint32_t restarts_;
+    
     std::unordered_map<unsigned long long, MarineFeature*> feature_;
     QL* ql_;
     Stav* state_;
     map<string, Statistic*> statistics{};
 
-    float reward;
+    bool is_restarting;
+    int unitCount;
+    int enemyUnitCount;
+    bool vsZealot;
+
     const float radiusQuadrant; //velkost radiusu kvadrantu
     int lastAction;
     int step;
@@ -37,6 +42,9 @@ class MarineBot : public sc2::Agent
     void save_statistics();
     float GetGlobalReward();
     float GetLocalReward();
+
+    void GameStart();
+    void GameEnd();
     
 public:
     MarineBot();

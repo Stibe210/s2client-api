@@ -14,20 +14,24 @@
 using namespace sc2;
 using namespace std;
 
-MarineBot::MarineBot() : restarts_(0), reward(0), radiusQuadrant(5), lastAction(0), step(100)
+MarineBot::MarineBot() : restarts_(0), radiusQuadrant(5), lastAction(0), step(100)
 {
-	double const GAMMA = 0.95;
+	is_restarting = false;
+	vsZealot = false;
+	unitCount = 3;
+	enemyUnitCount = 1;
+	double const GAMMA = 0.90;
 	double const ALPHA = 0.05;
-	double const EPSILON = 0.8;
+	double const EPSILON = 0.75;
 	int const featureCount = 3;
 	int const actionCount = 2;
 	startTime = time(nullptr);
-	saveFileName = "marine_ql8_marineCountFixed";
+	saveFileName = "marine_ql14_x100global";
 	feature_ = *new std::unordered_map<unsigned long long,MarineFeature*>;
 	state_ = new Stav(new vector<int>(featureCount, 0));///TODO NATVRDO nasraaaaaat com to tu ide - zaujimavy koment
 	ql_ = new QL(state_, featureCount, actionCount, new QInit());
 	ql_->SetHyperparemeters(ALPHA, GAMMA, EPSILON);
-	//ql_->Load(saveFileName + ".csv");
+	ql_->Load(saveFileName + ".csv");
     srand(time(nullptr)); ///HALO, CO TO TU ROBI TOTO?
 	statistics.insert({ "uspenost", new Statistic(30) });
 	statistics.insert({ "reward", new Statistic(30) });
@@ -38,30 +42,113 @@ void MarineBot::OnGameStart()
 {
     std::cout << "Starting a new game (" << restarts_ << " restarts)" << std::endl;
 	auto units = Observation()->GetUnits(Unit::Alliance::Self);
+	feature_.clear();
 	for (auto unit : units)
 	{
 		MarineFeature* ftr = new MarineFeature();
 		SetFeatures(unit, ftr);
 		ftr->set_lastAction(1);
-		feature_.insert(std::make_pair(unit->tag,ftr));
-		
+		feature_.insert(std::make_pair(unit->tag,ftr));		
 	}
 	Debug()->DebugMoveCamera(*new Point2D(
 		Observation()->GetGameInfo().playable_min.x + (Observation()->GetGameInfo().playable_max.x - Observation()->GetGameInfo().playable_min.x) / 2,
 		Observation()->GetGameInfo().playable_min.y + (Observation()->GetGameInfo().playable_max.y - Observation()->GetGameInfo().playable_min.y) / 2 - 4
 	));
+
+
+	
 	Debug()->SendDebug();
+
+}
+
+void MarineBot::GameStart()
+{
+	feature_.clear();
+	sc2::Units allUnits = Observation()->GetUnits();
+	if (vsZealot)
+		allUnits = Observation()->GetUnits(Unit::Alliance::Self);
+	if (restarts_ != 0)
+	{
+			for (auto unit : allUnits)
+			{
+				Debug()->DebugKillUnit(unit);
+			}
+				
+		//auto start = Observation()->GetStartLocation();
+		
+		
+			/*for (int i = 0; i < unitCount; i++)
+			{
+
+				int x = 13.5 + (rand()/ double(RAND_MAX)) * 4;
+				int y = 9 + (rand() / double(RAND_MAX)) * 4;
+				auto start = new const Point2D(x, y);
+				Debug()->DebugCreateUnit(UNIT_TYPEID::TERRAN_MARINE, *start, Observation()->GetPlayerID());
+			}*/
+			auto start = new const Point2D(15.5, 11);
+			Debug()->DebugCreateUnit(UNIT_TYPEID::TERRAN_MARINE, *start, Observation()->GetPlayerID(), 3);
+		Debug()->SendDebug();
+		if (!vsZealot)
+		{
+			auto enemyPoint = new const Point2D(15.5, 18);
+			for (int i = 0; i < enemyUnitCount; i++)
+			{
+				
+				int x = 13.5 + (rand() / double(RAND_MAX)) * 4;
+				int y = 16 + (rand() / double(RAND_MAX)) * 4;
+				auto start = new const Point2D(x, y);
+				Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_ZEALOT, *start, 2);
+			}
+			Debug()->SendDebug();				
+		}
+	}
+	
+	std::cout << "Starting a new game (" << restarts_ << " restarts)" << std::endl;
+	
+	Debug()->DebugMoveCamera(*new Point2D(
+		Observation()->GetGameInfo().playable_min.x + (Observation()->GetGameInfo().playable_max.x - Observation()->GetGameInfo().playable_min.x) / 2,
+		Observation()->GetGameInfo().playable_min.y + (Observation()->GetGameInfo().playable_max.y - Observation()->GetGameInfo().playable_min.y) / 2 - 4
+	));
 }
 
 void MarineBot::OnStep()
 {	
-    auto game_loop = Observation()->GetGameLoop();
+	if (is_restarting)
+		return;	
+	auto enemyUnits = Observation()->GetUnits(Unit::Enemy);
+	auto alliedUnits = Observation()->GetUnits(Unit::Alliance::Self);
+	auto game_loop = Observation()->GetGameLoop();
+	if (enemyUnits.empty() || alliedUnits.empty())
+	{
+		if (game_loop % 10 == 0)
+		{
+			is_restarting = true;
+			GameEnd();
+			GameStart();
+			is_restarting = false;
+			return;
+		}
+		
+	}
+	
+    
     if (game_loop % step != 0)
         return;
-    auto alliedUnits = Observation()->GetUnits(Unit::Alliance::Self);
-    if (alliedUnits.empty()) return;    
-	auto enemyUnits = Observation()->GetUnits(Unit::Enemy);
+    if (alliedUnits.empty()) return;
 	if (enemyUnits.empty()) return;
+
+	if (feature_.empty())
+	{
+		auto units = Observation()->GetUnits(Unit::Alliance::Self);
+		//feature_.clear();
+		for (auto unit : units)
+		{
+			MarineFeature* ftr = new MarineFeature();
+			SetFeatures(unit, ftr);
+			ftr->set_lastAction(1);
+			feature_.insert(std::make_pair(unit->tag, ftr));
+		}
+	}
 	srand(time(NULL));
 	for (auto unit : alliedUnits)
 	{
@@ -76,10 +163,10 @@ void MarineBot::OnStep()
 		}
 		reward += unit->health - feature->get_hpValue(); //rozdiel HPciek - momentalne - v minulom stave (tj negativna odmena)
 		*/
-		reward = GetLocalReward(); //zakomentovany predchadzajuci kod a skuska davat globalnu odmenu ako lokalnu
+		float reward = GetLocalReward(); //zakomentovany predchadzajuci kod a skuska davat globalnu odmenu ako lokalnu
 		ql_->Learn(reward, new Stav(feature->to_array()), feature->get_lastAction(), false);
 		SetFeatures(unit, feature);		
-		const int action = ql_->ChooseAction(false, this->state_);		
+		const int action = ql_->ChooseAction(false, new Stav(feature->to_array()));
 		switch (action)
 		{
 		case 0:
@@ -107,42 +194,37 @@ void MarineBot::OnStep()
 
 void MarineBot::OnGameEnd()
 {
+	GameEnd();
+}
+
+void MarineBot::GameEnd()
+{
 	++restarts_;
 	if (restarts_ % 5 == 0)
 	{
 		this->ql_->Save(saveFileName + ".csv");
-        save_statistics();
+		save_statistics();
 		cout << "Ukladam po " << restarts_ << " hrach." << endl;
 	}
-	reward = GetGlobalReward();	
-	auto vysledky = Observation()->GetResults();
-	for (auto player_result : vysledky)
+	float reward = GetGlobalReward();
+	
+	auto units = Observation()->GetUnits(Unit::Alliance::Self);
+	for (auto unit : units)
 	{
-		if (player_result.player_id == Observation()->GetPlayerID())
-		{
-			double pomocna = Observation()->GetScore().score_details.total_damage_dealt.life;
-			pomocna += Observation()->GetScore().score_details.total_damage_dealt.shields;
-			statistics["dmg"]->add(pomocna);
-			if (player_result.result == 0)
-			{
-				statistics["uspenost"]->add(1);
-				statistics["reward"]->add(reward);
-				cout << "Vyhral som. " /*<< this->ReportNaKonciHry()*/ << endl;
-				auto units = Observation()->GetUnits(Unit::Alliance::Self);
-				for (auto unit : units)
-				{
-					auto feature = feature_[unit->tag];
-					SetFeatures(unit, feature);
-					ql_->Learn(reward, new Stav(feature->to_array()), feature->get_lastAction(), true);
-				}				
-				break;
-			}
-			statistics["uspenost"]->add(0);
-			statistics["reward"]->add(reward);
-			cout << "Prehral som. " << endl /*<< this->ReportNaKonciHry()*/ << endl;
-			break;
-		}
+		auto feature = feature_[unit->tag];
+		SetFeatures(unit, feature);
+		ql_->Learn(reward, new Stav(feature->to_array()), feature->get_lastAction(), true);
 	}
+	if (units.empty())
+	{
+		statistics["uspenost"]->add(0);
+		cout << "Prehral som. MARINAK." << endl /*<< this->ReportNaKonciHry()*/ << endl;
+	} else
+	{
+		statistics["uspenost"]->add(1);
+		cout << "Vyhral som. MARINAK." /*<< this->ReportNaKonciHry()*/ << endl;
+	}
+	statistics["reward"]->add(reward);
 	std::cout << "Game ended after: " << Observation()->GetGameLoop() << " loops " << std::endl;
 }
 
@@ -459,7 +541,7 @@ void MarineBot::save_statistics()
 
 float MarineBot::GetGlobalReward()
 {
-	return GetLocalReward() * 10;
+	return GetLocalReward() * 100;
 }
 
 float MarineBot::GetLocalReward()
@@ -472,7 +554,7 @@ float MarineBot::GetLocalReward()
 	auto enemyUnits = Observation()->GetUnits(Unit::Enemy);
 	for (auto unit : enemyUnits)
 	{
-		rewardToReturn -= unit->health + 900; //zealot ma cca 150 hp aj so shieldom, tak trosku menej nech neni su zaporne rewardy
+		rewardToReturn -= (unit->health + 900); //zealot ma cca 150 hp aj so shieldom, tak trosku menej nech neni su zaporne rewardy
 		rewardToReturn -= unit->shield;
 	}
 	return rewardToReturn;

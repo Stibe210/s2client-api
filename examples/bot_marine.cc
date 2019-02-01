@@ -29,7 +29,7 @@ int main(int argc, char* argv[]) {
     // Step forward the game simulation.
     bool do_break = false;
     while (!do_break) {
-        coordinator.StartGame(sc2::kMapSmallMap);
+        coordinator.StartGame(sc2::kMapSmallMap2);
         while (coordinator.Update() && !do_break) {
             if (sc2::PollKeyPress()) {
                 std::cout << "Koncim cyklus" << std::endl;

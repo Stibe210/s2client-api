@@ -9,7 +9,7 @@ private:
     int hp;
     int marineCount;
     int distanceFromClosestEnemy;
-    int* quadrantSafety;
+    vector<int> *quadrantSafety;
     int featureCount;
     int lastAction;
     float hpValue;
@@ -28,8 +28,8 @@ public:
     int get_hp();
     void set_distanceFromClosestEnemy(float distance);
     int get_distanceFromClosestEnemy();
-    void set_quadrantSafety(float* safety);
-    int* get_quadrantSafety();
+    void set_quadrantSafety(vector<float>* safety);
+    vector<int>* get_quadrantSafety();
     float get_hpValue();
     void set_lastAction(int);
     int get_lastAction();

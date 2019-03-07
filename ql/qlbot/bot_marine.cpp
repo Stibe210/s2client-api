@@ -21,12 +21,12 @@ MarineBot::MarineBot() : restarts_(0), radiusQuadrant(5), lastAction(0), step(10
 	unitCount = 3;
 	enemyUnitCount = 1;
 	double const GAMMA = 0.90;
-	double const ALPHA = 0.05;
+	double const ALPHA = 0.2;
 	double const EPSILON = 0.75;
-	int const featureCount = 3;
-	int const actionCount = 2;
+	int const featureCount = 7;
+	int const actionCount = 3;
 	startTime = time(nullptr);
-	saveFileName = "marine_ql14_x100global";
+	saveFileName = "marine_ql20_quadrantsafety";
 	feature_ = *new std::unordered_map<unsigned long long,MarineFeature*>;
 	state_ = new Stav(new vector<int>(featureCount, 0));///TODO NATVRDO nasraaaaaat com to tu ide - zaujimavy koment
 	ql_ = new QL(state_, featureCount, actionCount, new QInit());
@@ -37,6 +37,8 @@ MarineBot::MarineBot() : restarts_(0), radiusQuadrant(5), lastAction(0), step(10
 	statistics.insert({ "reward", new Statistic(30) });
 	statistics.insert({ "dmg", new Statistic(30) });	
 }
+
+
 
 void MarineBot::OnGameStart()
 {
@@ -111,6 +113,7 @@ void MarineBot::GameStart()
 	));
 }
 
+
 void MarineBot::OnStep()
 {	
 	if (is_restarting)
@@ -166,7 +169,7 @@ void MarineBot::OnStep()
 		float reward = GetLocalReward(); //zakomentovany predchadzajuci kod a skuska davat globalnu odmenu ako lokalnu
 		ql_->Learn(reward, new Stav(feature->to_array()), feature->get_lastAction(), false);
 		SetFeatures(unit, feature);		
-		const int action = ql_->ChooseAction(false, new Stav(feature->to_array()));
+		const int action = ql_->ChooseAction(true, new Stav(feature->to_array()));
 		switch (action)
 		{
 		case 0:
@@ -178,12 +181,12 @@ void MarineBot::OnStep()
 			this->ActionMoveForward(unit);
 			break;
 		case 2:
-			step = 100;
-			this->ActionAttack(unit);
-			break;
-		case 3:
 			step = 30;
 			this->ActionMoveToQuadrant(unit);
+			break;			
+		case 3:
+			step = 100;
+			this->ActionAttack(unit);
 			break;
 		default:
 			break;
@@ -218,11 +221,11 @@ void MarineBot::GameEnd()
 	if (units.empty())
 	{
 		statistics["uspenost"]->add(0);
-		cout << "Prehral som. MARINAK." << endl /*<< this->ReportNaKonciHry()*/ << endl;
+		cout << "Prehral som. MARINAK. Odmena: " << reward << endl /*<< this->ReportNaKonciHry()*/ << endl;
 	} else
 	{
 		statistics["uspenost"]->add(1);
-		cout << "Vyhral som. MARINAK." /*<< this->ReportNaKonciHry()*/ << endl;
+		cout << "Vyhral som. MARINAK. Odmena: " << reward /*<< this->ReportNaKonciHry()*/ << endl;
 	}
 	statistics["reward"]->add(reward);
 	std::cout << "Game ended after: " << Observation()->GetGameLoop() << " loops " << std::endl;
@@ -428,15 +431,24 @@ float MarineBot::GetClosestEnemy(const Unit* source_unit, Unit*& closest_unit)
  */
 void MarineBot::SetFeatures(const Unit* unit, MarineFeature*& feature)
 {  
+	//pridal som ratanie totalneho hp vojakov a posielam namiesto aktualneho
 	Unit* closest_unit = nullptr;
 	float distanceFromEnemy = GetClosestEnemy(unit, closest_unit);
 	auto alliedUnits = Observation()->GetUnits(Unit::Alliance::Self);
 	int unitCounter = 0;
-	for (auto unit : alliedUnits)	
-		unitCounter++;	
+	float totalHP = 0;
+	float totalHPmax = 0;
+	for (auto unit : alliedUnits)
+	{
+		unitCounter++;
+		totalHP += unit->health;
+		totalHPmax += unit->health_max;
+	}
+		
 	feature->set_marineCount(unitCounter);
 	feature->set_distanceFromClosestEnemy(distanceFromEnemy);
-	feature->set_hp(unit->health / unit->health_max, unit->health);
+	//feature->set_hp(unit->health / unit->health_max, unit->health);
+	feature->set_hp(totalHP / totalHPmax, totalHP);
 	feature->set_quadrantSafety(GetFeatureQuadrant(unit));
 	feature->set_weaponCD(unit->weapon_cooldown);
 	if (unit->weapon_cooldown == 0)
@@ -523,7 +535,7 @@ void MarineBot::save_statistics()
 	for (auto statistic : statistics)
 	{
 		ofstream file;
-		auto filename = saveFileName + statistic.first + ".csv";
+		auto filename = saveFileName+"_" + statistic.first + ".csv";
 		std::ifstream ifile(filename);
 		if (!static_cast<bool>(ifile))
 		{
@@ -541,21 +553,22 @@ void MarineBot::save_statistics()
 
 float MarineBot::GetGlobalReward()
 {
-	return GetLocalReward() * 100;
+	return GetLocalReward() * 50;
 }
 
 float MarineBot::GetLocalReward()
 {
-	float rewardToReturn = 0;
+	float rewardToReturn = 1;
 	auto alliedUnits = Observation()->GetUnits(Unit::Alliance::Self);
 	for (auto unit : alliedUnits)
-		rewardToReturn += unit->health + 450; //marine ma 45 hp, konstantou prikladavame vacsiu dolezitost na to, ci je marine zivy, ako to, kolko ma hp
-
+		//rewardToReturn += unit->health; //marine ma 45 hp, konstantou prikladavame vacsiu dolezitost na to, ci je marine zivy, ako to, kolko ma hp
+		rewardToReturn *= 10;
 	auto enemyUnits = Observation()->GetUnits(Unit::Enemy);
 	for (auto unit : enemyUnits)
 	{
-		rewardToReturn -= (unit->health + 900); //zealot ma cca 150 hp aj so shieldom, tak trosku menej nech neni su zaporne rewardy
-		rewardToReturn -= unit->shield;
+		//rewardToReturn -= (unit->health); //zealot ma cca 150 hp aj so shieldom, tak trosku menej nech neni su zaporne rewardy
+		//rewardToReturn -= unit->shield;
+		rewardToReturn -= 30;
 	}
 	return rewardToReturn;
 }

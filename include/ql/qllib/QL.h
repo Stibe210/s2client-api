@@ -1,6 +1,7 @@
 #pragma once
 #include "Stav.h"
 
+
 class QInit;
 
 class QL
@@ -17,6 +18,7 @@ private:
 
     int pocetAkcii;//2 stavy -> 0-1 .. magic numbers mozno prerobit na enum ale boh vie ako to tu vsetko funguje :D :D 
     int pocetFeatur;
+
 
     float GAMMA = 0.9;//zlava
     float EPSILON = 0.75;

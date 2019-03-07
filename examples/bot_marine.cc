@@ -9,6 +9,7 @@
 
 //*************************************************************************************************
 int main(int argc, char* argv[]) {
+    srand(time(NULL));
     sc2::Coordinator coordinator;
     if (!coordinator.LoadSettings(argc, argv)) {
         return 1;

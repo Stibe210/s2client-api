@@ -32,7 +32,6 @@ MarineBot::MarineBot() : restarts_(0), radiusQuadrant(5), lastAction(0), step(10
 	ql_ = new QL(state_, featureCount, actionCount, new QInit());
 	ql_->SetHyperparemeters(ALPHA, GAMMA, EPSILON);
 	ql_->Load(saveFileName + ".csv");
-    srand(time(nullptr)); ///HALO, CO TO TU ROBI TOTO?
 	statistics.insert({ "uspenost", new Statistic(30) });
 	statistics.insert({ "reward", new Statistic(30) });
 	statistics.insert({ "dmg", new Statistic(30) });
@@ -56,11 +55,7 @@ void MarineBot::OnGameStart()
 		Observation()->GetGameInfo().playable_min.x + (Observation()->GetGameInfo().playable_max.x - Observation()->GetGameInfo().playable_min.x) / 2,
 		Observation()->GetGameInfo().playable_min.y + (Observation()->GetGameInfo().playable_max.y - Observation()->GetGameInfo().playable_min.y) / 2 - 4
 	));
-
-
-	
 	Debug()->SendDebug();
-
 }
 
 //Metoda na spustenie hry, respektive
@@ -155,7 +150,6 @@ void MarineBot::OnStep()
 			feature_.insert(std::make_pair(unit->tag, ftr));
 		}
 	}
-	srand(time(NULL));
 	for (auto unit : alliedUnits)
 	{
 		auto feature = feature_[unit->tag];

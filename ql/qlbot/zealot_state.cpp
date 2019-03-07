@@ -1,8 +1,7 @@
 #include "qlbot/zealot_state.h"
 
 
-ZealotState::ZealotState() : hp(0), shield(0), najblizsiPrvyVzd(0), najblizsiDruhyVzd(0), najblizsiPrvyHp(0),
-                             najblizsiDruhyHp(0), pocetNepriatelov(0), ciel(0)
+ZealotState::ZealotState() : hp(0), vazenaPrvaVzdialenost(0), vazenaDruhaVzdialenost(0), pocetNepriatelov(0), ciel(0)
 {
 }
 
@@ -40,149 +39,68 @@ int ZealotState::get_hp()
     return hp;
 }
 
-void ZealotState::set_shield(float shieldPer)
-{
-    //vela stavov s nizkim shieldom -> hned ide dole a neobnovuje sa? 
-    if (shieldPer < 0.01)
-    {
-        shield = 1;
-    }
-    else if (shieldPer < 0.2)
-    {
-        shield = 2;
-    }
-    else if (shieldPer < 0.45)
-    {
-        shield = 3;
-    }
-    else if (shieldPer < 0.75)
-    {
-        shield = 4;
-    }
-    else
-    {
-        shield = 5;
-    }
-}
 
-int ZealotState::get_shield()
-{
-    return shield;
-}
 
-void ZealotState::set_najblizsi_prvy_vzd(float distance)
+void ZealotState::set_najblizsi_prvy_vzd(float distance, float hp)
 {
     //3.5-5 nejako malo
-    if (distance < 2)
+    auto result = distance * hp;
+    if (result < 0.5)
     {
-        najblizsiPrvyVzd = 1;
+        vazenaPrvaVzdialenost = 1;
     }
-    else if (distance < 3)
+    else if (result < 1)
     {
-        najblizsiPrvyVzd = 2;
+        vazenaPrvaVzdialenost = 2;
     }
-    else if (distance < 4.5)
+    else if (result < 2)
     {
-        najblizsiPrvyVzd = 3;
+        vazenaPrvaVzdialenost = 3;
     }
-    else if (distance < 6)
+    else if (result < 3)
     {
-        najblizsiPrvyVzd = 4;
+        vazenaPrvaVzdialenost = 4;
     }
     else
     {
-        najblizsiPrvyVzd = 5;
+        vazenaPrvaVzdialenost = 5;
     }
 }
 
 int ZealotState::get_najblizsi_prvy_vzd()
 {
-    return najblizsiPrvyVzd;
+    return vazenaPrvaVzdialenost;
 }
 
-void ZealotState::set_najblizsi_druhy_vzd(float distance)
+void ZealotState::set_najblizsi_druhy_vzd(float distance, float hp)
 {
     //pod 5 ide celkom tazko
-
-    if (distance < 6)
+    auto result = distance * hp;
+    if (result < 0.5)
     {
-        najblizsiDruhyVzd = 1;
+        vazenaDruhaVzdialenost = 1;
     }
-    else if (distance < 7)
+    else if (result < 1)
     {
-        najblizsiDruhyVzd = 2;
+        vazenaDruhaVzdialenost = 2;
     }
-    else if (distance < 9)
+    else if (result < 2)
     {
-        najblizsiDruhyVzd = 3;
+        vazenaDruhaVzdialenost = 3;
     }
-    else if (distance < 12)
+    else if (result < 3)
     {
-        najblizsiDruhyVzd = 4;
+        vazenaDruhaVzdialenost = 4;
     }
     else
     {
-        najblizsiDruhyVzd = 5;
+        vazenaDruhaVzdialenost = 5;
     }
 }
 
 int ZealotState::get_najblizsi_druhy_vzd()
 {
-    return najblizsiDruhyVzd;
-}
-
-void ZealotState::set_najblizsi_prvy_hp(float hp)
-{
-    if (hp < 0.2)
-    {
-        najblizsiPrvyHp = 1;
-    }
-    else if (hp < 0.35)
-    {
-        najblizsiPrvyHp = 2;
-    }
-    else if (hp < 0.55)
-    {
-        najblizsiPrvyHp = 3;
-    }
-    else if (hp < 0.75)
-    {
-        najblizsiPrvyHp = 3;
-    }
-    else
-    {
-        najblizsiPrvyHp = 4;
-    }
-}
-
-int ZealotState::get_najblizsi_prvy_hp()
-{
-    return najblizsiPrvyHp;
-}
-
-void ZealotState::set_najblizsi_druhy_hp(float hp)
-{
-    if (hp < 0.2)
-    {
-        najblizsiDruhyHp = 1;
-    }
-    else if (hp < 0.4)
-    {
-        najblizsiDruhyHp = 2;
-    }
-    else if (hp < 0.75)
-    {
-        najblizsiDruhyHp = 3;
-    }
-    else
-    {
-        najblizsiDruhyHp = 4;
-    }
-}
-
-int ZealotState::get_najblizsi_druhy_hp()
-{
-    return najblizsiDruhyHp;
+    return vazenaDruhaVzdialenost;
 }
 
 void ZealotState::set_pocet_nepriatelov(int count)
@@ -207,15 +125,12 @@ int ZealotState::get_ciel()
 vector<int>* ZealotState::to_array()
 {
     vector<int>* pole = new vector<int>();
-    pole->resize(8);
+    pole->resize(5);
     (*pole)[0] = hp;
-    (*pole)[1] = shield;
-    (*pole)[2] = najblizsiPrvyVzd;
-    (*pole)[3] = najblizsiDruhyVzd;
-    (*pole)[4] = najblizsiPrvyHp;
-    (*pole)[5] = najblizsiDruhyHp;
-    (*pole)[6] = pocetNepriatelov;
-    (*pole)[7] = ciel;
+    (*pole)[1] = vazenaPrvaVzdialenost;
+    (*pole)[2] = vazenaDruhaVzdialenost;
+    (*pole)[3] = pocetNepriatelov;
+    (*pole)[4] = ciel;
     return pole;
 }
 

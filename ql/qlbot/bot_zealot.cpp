@@ -23,8 +23,8 @@ ZealotBot::ZealotBot(int count) :
     ALPHA = 0.05;
     EPSILON = 0.75;
     zstav_ = new ZealotState();
-    state_ = new Stav(new vector<int>(8, 0));///TODO NATVRDO nasraaaaaat com to tu ide
-    ql_ = new QL(state_, 8,3, new QInitZealot());
+    state_ = new Stav(new vector<int>(5, 0));///TODO NATVRDO nasraaaaaat com to tu ide
+    ql_ = new QL(state_, 5,3, new QInitZealot());
     ql_->SetHyperparemeters(ALPHA, GAMMA, EPSILON);
     //ql_->Load("saveQL.csv");
     printf("Nacitane snad ");
@@ -40,10 +40,11 @@ void ZealotBot::Vypis(std::string sprava)
 
 void ZealotBot::StartGame()
 {
-
+    //todo pridaj nejaky casovac pre obmedzenie casu jednej hry
     reward = 0;
     global_reward = 0;
     sc2::Units units = Observation()->GetUnits(sc2::Unit::Alliance::Self);
+    sc2::Units enemy_units = Observation()->GetUnits(sc2::Unit::Alliance::Enemy);
     if (restarts_ != 0)
     {
         if (!units.empty())
@@ -53,15 +54,28 @@ void ZealotBot::StartGame()
                 Debug()->DebugKillUnit(unit);
             }
         }
+        if (!enemy_units.empty())
+        {
+            for (auto unit : enemy_units)
+                Debug()->DebugKillUnit(unit);
+        }
         auto start = Observation()->GetGameInfo().start_locations.back();
         for (auto i = 0; i < start_count; i++)
         {
             Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::PROTOSS_ZEALOT, start, Observation()->GetPlayerID());
         }
+        auto enemyPoint = new const sc2::Point2D(15.5, 18);
+        for (int i = 0; i < 1; i++)
+        {
+
+            int x = 15.5 + (rand() / double(RAND_MAX)) * 4;
+            int y = 11 + (rand() / double(RAND_MAX)) * 4;
+            auto start = new const sc2::Point2D(x, y);
+            Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::PROTOSS_ZEALOT, *start, 2);
+        }
         Debug()->SendDebug();
     }
-    Debug()->DebugShowMap();
-    Debug()->SendDebug();
+    
     
     
 }
@@ -159,7 +173,6 @@ void ZealotBot::OnStep()
                 return;//ak nemame vojakov step sa nedeje (padlo)
             }
             get_state(*unit);
-            srand(time(NULL));
             int akcia = ql_->ChooseAction(false, this->state_);///TODO tu mu posli stav - aky stav? zstav? 
             sc2::Units jednotkyNepriatelov = Observation()->GetUnits(sc2::Unit::Enemy);
             if (akcia == 0)
@@ -460,13 +473,10 @@ void ZealotBot::HladajNepriatela(const sc2::Unit* unit)
 
 void ZealotBot::get_state(const sc2::Unit& unit) const
 {
-    const auto total_health = unit.health;
-    const auto max_health = unit.health_max;
-    const auto total_shield = unit.shield;
-    const auto max_shield = unit.shield_max;
+    const auto total_health = unit.health + unit.shield;
+    const auto max_health = unit.health_max + unit.shield_max;
 
     zstav_->set_hp(total_health / max_health);
-    zstav_->set_shield(total_shield / max_shield);
     auto enemy_units = Observation()->GetUnits(sc2::Unit::Alliance::Enemy);
     auto distance1 = FLT_MAX;
     auto distance2 = FLT_MAX;
@@ -514,18 +524,14 @@ void ZealotBot::get_state(const sc2::Unit& unit) const
     zstav_->set_pocet_nepriatelov(enemy_units.size());
     if (u1 == nullptr)
     {
-        zstav_->set_najblizsi_prvy_hp(1.0);
-        zstav_->set_najblizsi_druhy_hp(1.0);
-        zstav_->set_najblizsi_prvy_vzd(10.0);
-        zstav_->set_najblizsi_druhy_vzd(10.0);
+        zstav_->set_najblizsi_prvy_vzd(1.0, 1.0);
+        zstav_->set_najblizsi_druhy_vzd(1.0, 1.0);
         zstav_->set_ciel(3);
     }
     else if (u2 == nullptr)
     {
-        zstav_->set_najblizsi_prvy_hp((u1->health + u1->shield) / (u1->health_max + u1->shield_max));
-        zstav_->set_najblizsi_druhy_hp(1.0);
-        zstav_->set_najblizsi_prvy_vzd(distance1);
-        zstav_->set_najblizsi_druhy_vzd(10.0);
+        zstav_->set_najblizsi_prvy_vzd(distance1, (u1->health + u1->shield) / (u1->health_max + u1->shield_max));
+        zstav_->set_najblizsi_druhy_vzd(1.0, 1.0);
         if (unit.engaged_target_tag == u1->tag)
         {
             zstav_->set_ciel(1);
@@ -536,10 +542,8 @@ void ZealotBot::get_state(const sc2::Unit& unit) const
     }
     else
     {
-        zstav_->set_najblizsi_prvy_hp((u1->health + u1->shield) / (u1->health_max + u1->shield_max));
-        zstav_->set_najblizsi_druhy_hp((u2->health + u2->shield) / (u2->health_max + u2->shield_max));
-        zstav_->set_najblizsi_prvy_vzd(distance1);
-        zstav_->set_najblizsi_druhy_vzd(distance2);
+        zstav_->set_najblizsi_prvy_vzd(distance1, (u1->health + u1->shield) / (u1->health_max + u1->shield_max));
+        zstav_->set_najblizsi_druhy_vzd(distance2, (u2->health + u2->shield) / (u2->health_max + u2->shield_max));
         if (unit.engaged_target_tag == u1->tag)
         {
             zstav_->set_ciel(1);
@@ -559,8 +563,3 @@ void ZealotBot::triangulate(const float speed, const float degree, float& x, flo
     x = cos(degree * pi / 180) * speed;
     y = sin(degree * pi / 180) * speed;
 }
-
-//vector<int>* ZealotBot::DajStav()
-//{
-//    return zstav_->to_array();
-//}

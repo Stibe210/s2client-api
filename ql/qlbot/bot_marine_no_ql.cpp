@@ -41,7 +41,6 @@ void MarineBotNoQL::OnStep()
     if (alliedUnits.empty()) return;    
 	auto enemyUnits = Observation()->GetUnits(Unit::Enemy);
 	if (enemyUnits.empty()) return;
-	srand(time(NULL));
 	for (auto unit : alliedUnits)
 	{
 		int action = -1;

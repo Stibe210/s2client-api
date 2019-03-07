@@ -28,7 +28,7 @@ class MarineBot : public sc2::Agent
     string saveFileName;
     void SetFeatures(const sc2::Unit*, MarineFeature*&);
     
-    float* GetFeatureQuadrant(const sc2::Unit*);
+    vector<float>* GetFeatureQuadrant(const sc2::Unit*);
 
     void ActionMoveBack(const sc2::Unit*);
     void ActionMoveForward(const sc2::Unit*);

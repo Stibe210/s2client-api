@@ -17,7 +17,6 @@ QL::QL(Stav* stav, int pocFeatur, int pocAkcii,QInit* qin)
 {
 
     qInit = qin;
-    srand(time(NULL));
 	minulyStav = stav->Clone();
     zaciatocnyStav = stav->Clone();
 	QStav* qStav = new QStav(pocAkcii,qInit);
@@ -58,8 +57,7 @@ void QL::SetHyperparemeters(float alpha, float gamma, float epsilon)
 {
     ALPHA = alpha;
     GAMMA = gamma;
-    EPSILONx1000 = epsilon * 1000;
-
+    EPSILON = epsilon;
 }
 
 //Nejako vybere akciu
@@ -67,14 +65,17 @@ void QL::SetHyperparemeters(float alpha, float gamma, float epsilon)
 int QL::ChooseAction(bool vybratNajlepsie, Stav* stav)
 {
 
-    int nahoda = rand() % 1000;
+    float nahoda = ((double)rand() / (RAND_MAX));
+    cout << "NAHODA PREMENNA" << endl;
+    cout << nahoda << endl;
 	//mozno nejaka vazena nahoda podla hodnoty q
-	if (nahoda < EPSILONx1000 && !vybratNajlepsie)
+	if (nahoda < EPSILON && !vybratNajlepsie)
 	{
         //kus duplicita ale koho zajima
         auto pairr = stavy->find(stav);
         if (pairr == stavy->end()) {
             //Taky stav este nebol -> random akcia
+            cout << "BEZ STAVU - uplne random" << endl;
             return rand() % pocetAkcii;
         }
         QL::QStav* qSt = pairr->second;
@@ -89,9 +90,11 @@ int QL::ChooseAction(bool vybratNajlepsie, Stav* stav)
         }
         QL::QStav* qSt = pairr->second;
 		float najlepsia = qSt->DajNajvyssieQ();
+        cout << "VYBERAM NAJLEPSIU" << endl;
 		if (najlepsia <= 0.0)
 		{
 			//Nemame ziadnu najlepsiu -> random (za predpokladu ze nie su zaporne)
+            cout << "NAJLEPSIA SA NENASLA - RANDOM" << endl;
 			return rand() % pocetAkcii;
 		}
 		return qSt->DajNajlepsiuAkciu();
@@ -108,10 +111,10 @@ void QL::UpravHyperparametre()
         ALPHA = 0.05;// aby to nebehalo uplne zbytocne
     }
 
-    EPSILONx1000 *= zmenaEPSILON;
-    if (EPSILONx1000 < 100)
+    EPSILON *= zmenaEPSILON;
+    if (EPSILON < 0.1)
     {
-        EPSILONx1000 = 100;//10% random
+        EPSILON = 0.1;//10% random
     }
 }
 
@@ -281,7 +284,7 @@ void QL::Load(string path)
 
         qHodnoty = new vector<float>(pocetAkcii);//new int[pocetAkcii];
 		//qHodnoty->resize(pocetAkcii);
-        cout << "akcie" << pocetAkcii << endl;
+        //cout << "akcie" << pocetAkcii << endl;
         if (qInicialization == nullptr) {
             //zmeni q hodnoty na 0 bo c++ ta nwm :D :D 
             for (int i = 0; i < pocetAkcii; i++)
@@ -314,11 +317,15 @@ void QL::Load(string path)
         {
             int nahoda = rand() % pristupy.size();
             pristupy[nahoda]++;
+            //printf('RANDOM');
+            cout << "RANDOM" << endl;
             return nahoda;
         }
         else if (pocetNulovychPristupov == 1)
         {
             pristupy[indexPoslednehoNuloveho]++;
+            //printf('POSLEDNY NULOVY');
+            cout << "POSLEDNY NULOVY" << endl;
             return indexPoslednehoNuloveho;
         }
         else
@@ -331,6 +338,8 @@ void QL::Load(string path)
                 nahoda = rand() % pristupy.size();
             }
             pristupy[nahoda]++;
+            //printf('NAHODA Z NULOVYCH');
+            cout << "NAHODA Z NULOVYCH" << endl;
             return nahoda;
         }
 

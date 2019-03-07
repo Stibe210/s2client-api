@@ -1,6 +1,7 @@
 #pragma once
 #include "Stav.h"
 
+
 class QInit;
 
 class QL
@@ -18,11 +19,12 @@ private:
     int pocetAkcii;//2 stavy -> 0-1 .. magic numbers mozno prerobit na enum ale boh vie ako to tu vsetko funguje :D :D 
     int pocetFeatur;
 
+
     float GAMMA = 0.9;//zlava
-    float EPSILONx1000 = 0.75 * 1000;//kolko ide random
+    float EPSILON = 0.75;
     float ALPHA = 0.05;//learning rate
     float zmenaALPHA = 1;// 0.9999;
-    float zmenaEPSILON = 0.999;// 0.999;
+    float zmenaEPSILON = 0.9998;// 0.999;
     QInit* qInit = nullptr;
 
 

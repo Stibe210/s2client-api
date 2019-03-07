@@ -21,12 +21,12 @@ MarineBot::MarineBot() : restarts_(0), radiusQuadrant(5), lastAction(0), step(10
 	unitCount = 3;
 	enemyUnitCount = 1;
 	double const GAMMA = 0.90;
-	double const ALPHA = 0.2;
+	double const ALPHA = 0.05;
 	double const EPSILON = 0.75;
 	int const featureCount = 7;
 	int const actionCount = 3;
 	startTime = time(nullptr);
-	saveFileName = "marine_ql20_quadrantsafety";
+	saveFileName = "marine_ql21_quadrantsafety";
 	feature_ = *new std::unordered_map<unsigned long long,MarineFeature*>;
 	state_ = new Stav(new vector<int>(featureCount, 0));///TODO NATVRDO nasraaaaaat com to tu ide - zaujimavy koment
 	ql_ = new QL(state_, featureCount, actionCount, new QInit());

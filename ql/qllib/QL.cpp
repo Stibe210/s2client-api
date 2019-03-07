@@ -314,11 +314,15 @@ void QL::Load(string path)
         {
             int nahoda = rand() % pristupy.size();
             pristupy[nahoda]++;
+            //printf('RANDOM');
+            cout << "RANDOM" << endl;
             return nahoda;
         }
         else if (pocetNulovychPristupov == 1)
         {
             pristupy[indexPoslednehoNuloveho]++;
+            //printf('POSLEDNY NULOVY');
+            cout << "POSLEDNY NULOVY" << endl;
             return indexPoslednehoNuloveho;
         }
         else
@@ -331,6 +335,8 @@ void QL::Load(string path)
                 nahoda = rand() % pristupy.size();
             }
             pristupy[nahoda]++;
+            //printf('NAHODA Z NULOVYCH');
+            cout << "NAHODA Z NULOVYCH" << endl;
             return nahoda;
         }
 

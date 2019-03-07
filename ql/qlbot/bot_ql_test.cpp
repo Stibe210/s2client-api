@@ -219,7 +219,7 @@ void QlBot::OnStep()
             return;//ak nemame vojakov step sa nedeje (padlo)
         }
         auto stav = new Stav(zstav_->to_array());
-        int akcia = ql_->ChooseAction(this->is_learning, stav);
+        int akcia = ql_->ChooseAction(true, stav);
         //cout << stav->toCSV() << endl;
         sc2::Units jednotkyNepriatelov = Observation()->GetUnits(sc2::Unit::Enemy);
         /*cout << "x:" << zstav_->get_x() << " y: " << zstav_->get_y() << endl;*/

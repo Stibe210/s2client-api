@@ -54,11 +54,7 @@ void MarineBot::OnGameStart()
 		Observation()->GetGameInfo().playable_min.x + (Observation()->GetGameInfo().playable_max.x - Observation()->GetGameInfo().playable_min.x) / 2,
 		Observation()->GetGameInfo().playable_min.y + (Observation()->GetGameInfo().playable_max.y - Observation()->GetGameInfo().playable_min.y) / 2 - 4
 	));
-
-
-	
 	Debug()->SendDebug();
-
 }
 
 void MarineBot::GameStart()
@@ -166,7 +162,7 @@ void MarineBot::OnStep()
 		float reward = GetLocalReward(); //zakomentovany predchadzajuci kod a skuska davat globalnu odmenu ako lokalnu
 		ql_->Learn(reward, new Stav(feature->to_array()), feature->get_lastAction(), false);
 		SetFeatures(unit, feature);		
-		const int action = ql_->ChooseAction(false, new Stav(feature->to_array()));
+		const int action = ql_->ChooseAction(true, new Stav(feature->to_array()));
 		switch (action)
 		{
 		case 0:

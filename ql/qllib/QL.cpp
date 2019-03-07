@@ -59,7 +59,7 @@ void QL::SetHyperparemeters(float alpha, float gamma, float epsilon)
     ALPHA = alpha;
     GAMMA = gamma;
     EPSILONx1000 = epsilon * 1000;
-    EPSILON = epsilon
+	EPSILON = epsilon;
 }
 
 //Nejako vybere akciu

@@ -26,7 +26,7 @@ MarineBot::MarineBot() : restarts_(0), radiusQuadrant(5), lastAction(0), step(10
 	int const featureCount = 7;
 	int const actionCount = 3;
 	startTime = time(nullptr);
-	saveFileName = "marine_ql21_quadrantsafety";
+	saveFileName = "marine_ql22_quadrantsafety";
 	feature_ = *new std::unordered_map<unsigned long long,MarineFeature*>;
 	state_ = new Stav(new vector<int>(featureCount, 0));///TODO NATVRDO nasraaaaaat com to tu ide - zaujimavy koment
 	ql_ = new QL(state_, featureCount, actionCount, new QInit());
@@ -169,7 +169,7 @@ void MarineBot::OnStep()
 		float reward = GetLocalReward(); //zakomentovany predchadzajuci kod a skuska davat globalnu odmenu ako lokalnu
 		ql_->Learn(reward, new Stav(feature->to_array()), feature->get_lastAction(), false);
 		SetFeatures(unit, feature);		
-		const int action = ql_->ChooseAction(true, new Stav(feature->to_array()));
+		const int action = ql_->ChooseAction(false, new Stav(feature->to_array()));
 		switch (action)
 		{
 		case 0:

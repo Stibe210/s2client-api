@@ -15,16 +15,18 @@
 #include <cfloat>
 
 
-ZealotBot::ZealotBot(int count) :
-    restarts_(0), pi(atan(1) * 4), dmg(0), hp(0), shield(0), jeVypis(true), lastAction(0), reward(0), global_reward(0), start_count(count), step(100)
+ZealotBot::ZealotBot(int count) : game_start(0),
+                                  restarts_(0), pi(atan(1) * 4), dmg(0), hp(0), shield(0), jeVypis(true), lastAction(0),
+                                  reward(0), global_reward(0), start_count(count), step(100)
 {
     //TODO: upravit bota pre hyperparametre epsilon a alfa (vyber nahodneho stavu a learning rate)
     GAMMA = 0.9;
     ALPHA = 0.05;
     EPSILON = 0.75;
+    srand(time(NULL));
     zstav_ = new ZealotState();
-    state_ = new Stav(new vector<int>(5, 0));///TODO NATVRDO nasraaaaaat com to tu ide
-    ql_ = new QL(state_, 5,3, new QInitZealot());
+    state_ = new Stav(new vector<int>(5, 0)); ///TODO NATVRDO nasraaaaaat com to tu ide
+    ql_ = new QL(state_, 5, 3, new QInitZealot());
     ql_->SetHyperparemeters(ALPHA, GAMMA, EPSILON);
     //ql_->Load("saveQL.csv");
     printf("Nacitane snad ");
@@ -41,6 +43,7 @@ void ZealotBot::Vypis(std::string sprava)
 void ZealotBot::StartGame()
 {
     //todo pridaj nejaky casovac pre obmedzenie casu jednej hry
+    game_start = time(NULL);
     reward = 0;
     global_reward = 0;
     sc2::Units units = Observation()->GetUnits(sc2::Unit::Alliance::Self);
@@ -121,6 +124,15 @@ void ZealotBot::OnStep()
     //Observation()->GetGameInfo().start_locations;
     //Observation()->GetScore().score_details.killed_minerals;
     //OnUnitDestroyed();
+    auto curr_time = time(NULL);
+    if (curr_time - game_start > 30)
+    {
+        is_restarting = true;
+        EndGame();
+        StartGame();
+        is_restarting = false;
+        return;
+    }
     sc2::Units units = Observation()->GetUnits(sc2::Unit::Alliance::Self);
     if (game_loop % 10 == 0)
     {

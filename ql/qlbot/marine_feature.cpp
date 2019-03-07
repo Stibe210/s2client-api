@@ -6,7 +6,7 @@ MarineFeature::MarineFeature(int paFeatureCount) : hp(0), marineCount(0), distan
 	quadrantSafety = new int[4] {0, 0, 0, 0};
 }
 
-MarineFeature::MarineFeature() : hp(0), distanceFromClosestEnemy(0), featureCount(3), lastAction(-1), hpValue(0), weaponCD(0)
+MarineFeature::MarineFeature() : hp(0), distanceFromClosestEnemy(0), featureCount(7), lastAction(-1), hpValue(0), weaponCD(0)
 {
 	quadrantSafety = new int[4]{ 0, 0, 0, 0 };
 }
@@ -133,11 +133,11 @@ vector<int>* MarineFeature::to_array()
 	(*pole)[2] = marineCount;
     /*(*pole)[3] = vzd1odNepriatela;
     (*pole)[4] = vzd2odNepriatela;
-	(*pole)[5] = vzd3odNepriatela;
-	(*pole)[6] = quadrantSafety[0];
-	(*pole)[7] = quadrantSafety[1];
-	(*pole)[8] = quadrantSafety[2];
-	(*pole)[9] = quadrantSafety[3];*/
+	(*pole)[5] = vzd3odNepriatela;*/
+	(*pole)[3] = quadrantSafety[0];
+	(*pole)[4] = quadrantSafety[1];
+	(*pole)[5] = quadrantSafety[2];
+	(*pole)[6] = quadrantSafety[3];
     return pole;
 }
 

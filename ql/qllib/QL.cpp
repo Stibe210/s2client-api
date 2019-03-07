@@ -58,8 +58,7 @@ void QL::SetHyperparemeters(float alpha, float gamma, float epsilon)
 {
     ALPHA = alpha;
     GAMMA = gamma;
-    EPSILONx1000 = epsilon * 1000;
-    EPSILON = epsilon
+    EPSILON = epsilon;
 }
 
 //Nejako vybere akciu
@@ -111,10 +110,10 @@ void QL::UpravHyperparametre()
         ALPHA = 0.05;// aby to nebehalo uplne zbytocne
     }
 
-    EPSILONx1000 *= zmenaEPSILON;
-    if (EPSILONx1000 < 100)
+    EPSILON *= zmenaEPSILON;
+    if (EPSILON < 0.1)
     {
-        EPSILONx1000 = 100;//10% random
+        EPSILON = 0.1;//10% random
     }
 }
 

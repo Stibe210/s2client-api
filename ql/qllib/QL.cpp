@@ -59,7 +59,7 @@ void QL::SetHyperparemeters(float alpha, float gamma, float epsilon)
     ALPHA = alpha;
     GAMMA = gamma;
     EPSILONx1000 = epsilon * 1000;
-
+    EPSILON = epsilon
 }
 
 //Nejako vybere akciu
@@ -67,9 +67,9 @@ void QL::SetHyperparemeters(float alpha, float gamma, float epsilon)
 int QL::ChooseAction(bool vybratNajlepsie, Stav* stav)
 {
 
-    int nahoda = rand() % 1000;
+    int nahoda = ((double)rand() / (RAND_MAX));
 	//mozno nejaka vazena nahoda podla hodnoty q
-	if (nahoda < EPSILONx1000 && !vybratNajlepsie)
+	if (nahoda < EPSILON && !vybratNajlepsie)
 	{
         //kus duplicita ale koho zajima
         auto pairr = stavy->find(stav);

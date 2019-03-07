@@ -319,14 +319,14 @@ void MarineBot::ActionAttack(const Unit* unit)
  */
 void MarineBot::ActionMoveToQuadrant(const Unit* unit)
 {
-	float* quadrant = GetFeatureQuadrant(unit);
+	vector<float> *quadrant = GetFeatureQuadrant(unit);
 	float max = FLT_MIN;
 	int index = -1;
 	for (int i = 0; i < 4; i++)
 	{
-		if (quadrant[i] >= max)
+		if ((*quadrant)[i] >= max)
 		{
-			max = quadrant[i];
+			max = (*quadrant)[i];
 			index = i;
 		}
 	}
@@ -361,18 +361,18 @@ void MarineBot::ActionMoveToQuadrant(const Unit* unit)
  * Momentalne je ako hodnota zvolena vzdialenost ovahovana medzi 0 a 5 (ak je blizko ku stredu, ma vyssiu vahu)
  * Allied jendotky davaju kladne cislo, nepriatelske jednotky davaju zaporne cislo * 3 (kedze cca 3x marine = 1 zealot)
  */
-float* MarineBot::GetFeatureQuadrant(const Unit* unit)
+vector<float>* MarineBot::GetFeatureQuadrant(const Unit* unit)
 {	
-	Units alliedUnits = Observation()->GetUnits(Unit::Ally);
+	Units alliedUnits = Observation()->GetUnits(Unit::Alliance::Self);
 	Units enemyUnits = Observation()->GetUnits(Unit::Enemy);
-	float *quadrant = new float[4];
+	vector<float> *quadrant = new vector<float>(4);
 	for (auto alliedUnit : alliedUnits)
 	{
 		float distance = abs(Distance2D(alliedUnit->pos, unit->pos));
 		//float distance = sqrt(pow(abs(alliedUnit->pos.x - unit->pos.x), 2.0) + pow(abs(alliedUnit->pos.y - unit->pos.y), 2.0));
 		//if (distance <= radiusQuadrant / 2)
 		//quadrant[this->GetQuadrantIndex(unit, alliedUnit)] += (radiusQuadrant / 2 - distance) / radiusQuadrant / 2;
-		quadrant[this->GetQuadrantIndex(unit, alliedUnit)] += (radiusQuadrant - distance) / radiusQuadrant;
+		(*quadrant)[this->GetQuadrantIndex(unit, alliedUnit)] += (radiusQuadrant - distance) / radiusQuadrant;
 	}
 	for (auto enemyUnit : enemyUnits)
 	{
@@ -380,7 +380,7 @@ float* MarineBot::GetFeatureQuadrant(const Unit* unit)
 		//float distance = sqrt(pow(abs(enemyUnit->pos.x - unit->pos.x), 2.0) + pow(abs(enemyUnit->pos.y - unit->pos.y), 2.0));
 		//if (distance >= radiusQuadrant / 2)
 		//quadrant[this->GetQuadrantIndex(unit, enemyUnit)] -= (radiusQuadrant / 2 -distance) / radiusQuadrant / 2;
-		quadrant[this->GetQuadrantIndex(unit, enemyUnit)] -= 3*((radiusQuadrant - distance) / radiusQuadrant);
+		(*quadrant)[this->GetQuadrantIndex(unit, enemyUnit)] -= 3*((radiusQuadrant - distance) / radiusQuadrant);
 	}
 	return quadrant;
 }

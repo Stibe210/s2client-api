@@ -26,7 +26,7 @@ MarineBot::MarineBot() : restarts_(0), radiusQuadrant(5), lastAction(0), step(10
 	int const featureCount = 7;
 	int const actionCount = 3;
 	startTime = time(nullptr);
-	saveFileName = "marine_ql22_quadrantsafety";
+	saveFileName = "marine_ql24_quadrantsafety";
 	feature_ = *new std::unordered_map<unsigned long long,MarineFeature*>;
 	state_ = new Stav(new vector<int>(featureCount, 0));///TODO NATVRDO nasraaaaaat com to tu ide - zaujimavy koment
 	ql_ = new QL(state_, featureCount, actionCount, new QInit());
@@ -35,11 +35,11 @@ MarineBot::MarineBot() : restarts_(0), radiusQuadrant(5), lastAction(0), step(10
     srand(time(nullptr)); ///HALO, CO TO TU ROBI TOTO?
 	statistics.insert({ "uspenost", new Statistic(30) });
 	statistics.insert({ "reward", new Statistic(30) });
-	statistics.insert({ "dmg", new Statistic(30) });	
+	statistics.insert({ "dmg", new Statistic(30) });
 }
 
-
-
+//Overload prepisany tusim metody OnGameStart
+//Vola GameEnd
 void MarineBot::OnGameStart()
 {
     std::cout << "Starting a new game (" << restarts_ << " restarts)" << std::endl;
@@ -63,6 +63,8 @@ void MarineBot::OnGameStart()
 
 }
 
+//Metoda na spustenie hry, respektive
+//ak zomru vsetky jednotky jednej strany, spusti sa znova
 void MarineBot::GameStart()
 {
 	feature_.clear();
@@ -113,7 +115,8 @@ void MarineBot::GameStart()
 	));
 }
 
-
+//Kazdy step v hre - 
+//
 void MarineBot::OnStep()
 {	
 	if (is_restarting)
@@ -169,7 +172,7 @@ void MarineBot::OnStep()
 		float reward = GetLocalReward(); //zakomentovany predchadzajuci kod a skuska davat globalnu odmenu ako lokalnu
 		ql_->Learn(reward, new Stav(feature->to_array()), feature->get_lastAction(), false);
 		SetFeatures(unit, feature);		
-		const int action = ql_->ChooseAction(false, new Stav(feature->to_array()));
+		const int action = ql_->ChooseAction(true, new Stav(feature->to_array()));
 		switch (action)
 		{
 		case 0:
@@ -195,11 +198,15 @@ void MarineBot::OnStep()
 	}
 }
 
+//Overload prepisany metody OnGameEnd
+//Vola GameEnd
 void MarineBot::OnGameEnd()
 {
 	GameEnd();
 }
 
+//Ukonci hru
+//Ak zomrie jedna strana - jednotky
 void MarineBot::GameEnd()
 {
 	++restarts_;
@@ -551,18 +558,22 @@ void MarineBot::save_statistics()
 	}
 }
 
+//Vrati globalnu odmenu
+//momentalne 50*lokalna
 float MarineBot::GetGlobalReward()
 {
 	return GetLocalReward() * 50;
 }
 
+//Vrati lokalnu odmenu
+//momentalne 
 float MarineBot::GetLocalReward()
 {
-	float rewardToReturn = 1;
+	float rewardToReturn = 10;
 	auto alliedUnits = Observation()->GetUnits(Unit::Alliance::Self);
 	for (auto unit : alliedUnits)
 		//rewardToReturn += unit->health; //marine ma 45 hp, konstantou prikladavame vacsiu dolezitost na to, ci je marine zivy, ako to, kolko ma hp
-		rewardToReturn *= 10;
+		rewardToReturn += 10;
 	auto enemyUnits = Observation()->GetUnits(Unit::Enemy);
 	for (auto unit : enemyUnits)
 	{

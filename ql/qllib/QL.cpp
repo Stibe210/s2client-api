@@ -17,7 +17,6 @@ QL::QL(Stav* stav, int pocFeatur, int pocAkcii,QInit* qin)
 {
 
     qInit = qin;
-    srand(time(NULL));
 	minulyStav = stav->Clone();
     zaciatocnyStav = stav->Clone();
 	QStav* qStav = new QStav(pocAkcii,qInit);
@@ -66,7 +65,9 @@ void QL::SetHyperparemeters(float alpha, float gamma, float epsilon)
 int QL::ChooseAction(bool vybratNajlepsie, Stav* stav)
 {
 
-    int nahoda = ((double)rand() / (RAND_MAX));
+    float nahoda = ((double)rand() / (RAND_MAX));
+    cout << "NAHODA PREMENNA" << endl;
+    cout << nahoda << endl;
 	//mozno nejaka vazena nahoda podla hodnoty q
 	if (nahoda < EPSILON && !vybratNajlepsie)
 	{

@@ -159,7 +159,6 @@ void ZealotBot::OnStep()
                 return;//ak nemame vojakov step sa nedeje (padlo)
             }
             get_state(*unit);
-            srand(time(NULL));
             int akcia = ql_->ChooseAction(false, this->state_);///TODO tu mu posli stav - aky stav? zstav? 
             sc2::Units jednotkyNepriatelov = Observation()->GetUnits(sc2::Unit::Enemy);
             if (akcia == 0)

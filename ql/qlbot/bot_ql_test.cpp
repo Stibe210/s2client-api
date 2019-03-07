@@ -14,7 +14,6 @@ QlBot::QlBot(int width, int height, float square_size, bool is_learning) :
     restarts_(0), pi(atan(1) * 4)
 {
     //todo: parametricke prepinanie ucenia a cesta k csv s q hodnotami
-    srand(time(NULL));
     buffer_pointer = buffer;
     buffer_size = 0;
 

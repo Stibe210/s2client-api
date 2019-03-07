@@ -32,7 +32,6 @@ MarineBot::MarineBot() : restarts_(0), radiusQuadrant(5), lastAction(0), step(10
 	ql_ = new QL(state_, featureCount, actionCount, new QInit());
 	ql_->SetHyperparemeters(ALPHA, GAMMA, EPSILON);
 	ql_->Load(saveFileName + ".csv");
-    srand(time(nullptr)); ///HALO, CO TO TU ROBI TOTO?
 	statistics.insert({ "uspenost", new Statistic(30) });
 	statistics.insert({ "reward", new Statistic(30) });
 	statistics.insert({ "dmg", new Statistic(30) });	
@@ -152,7 +151,6 @@ void MarineBot::OnStep()
 			feature_.insert(std::make_pair(unit->tag, ftr));
 		}
 	}
-	srand(time(NULL));
 	for (auto unit : alliedUnits)
 	{
 		auto feature = feature_[unit->tag];

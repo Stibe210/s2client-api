@@ -185,7 +185,7 @@ void ZealotBot::OnStep()
                 return;//ak nemame vojakov step sa nedeje (padlo)
             }
             get_state(*unit);
-            int akcia = ql_->ChooseAction(false, this->state_);///TODO tu mu posli stav - aky stav? zstav? 
+            int akcia = ql_->ChooseAction(false, new Stav(zstav_->to_array()));///TODO tu mu posli stav - aky stav? zstav? 
             sc2::Units jednotkyNepriatelov = Observation()->GetUnits(sc2::Unit::Enemy);
             if (akcia == 0)
             {
@@ -209,13 +209,13 @@ void ZealotBot::OnStep()
         }
     }
 
-    auto start = Observation()->GetStartLocation();
-    auto upper_left = new sc2::Point3D(15.5 - 2, 18 - 2, 0);
-    auto lower_right = new sc2::Point3D(15.5 + 2, 18 + 2, 1);
+    //auto start = Observation()->GetStartLocation();
+    //auto upper_left = new sc2::Point3D(15.5 - 2, 18 - 2, 0);
+    //auto lower_right = new sc2::Point3D(15.5 + 2, 18 + 2, 1);
     //auto upper_left = new sc2::Point3D(start.x - 2, start.y - 2, 0);
     //auto lower_right = new sc2::Point3D(start.x + 2, start.y + 2, 1);
-    Debug()->DebugBoxOut(*upper_left, *lower_right, sc2::Colors::Red);
-    Debug()->SendDebug();
+    //Debug()->DebugBoxOut(*upper_left, *lower_right, sc2::Colors::Red);
+    //Debug()->SendDebug();
 }
 
 void ZealotBot::UlozNaucene()

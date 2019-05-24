@@ -18,8 +18,8 @@ int main(int argc, char* argv[]) {
     ZealotBot marine;
 
     coordinator.SetParticipants({
-        CreateParticipant(sc2::Race::Terran, &marine),
-        CreateParticipant(sc2::Race::Protoss, &zealot)
+        CreateParticipant(sc2::Race::Protoss, &zealot),
+        CreateParticipant(sc2::Race::Terran, &marine)        
         });
     //coordinator.SetRealtime(true);
     // Start the game.

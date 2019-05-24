@@ -32,9 +32,9 @@ MarineBot::MarineBot() : restarts_(0), radiusQuadrant(5), lastAction(0), step(10
 	ql_ = new QL(state_, featureCount, actionCount, new QInit());
 	ql_->SetHyperparemeters(ALPHA, GAMMA, EPSILON);
 	ql_->Load(saveFileName + ".csv");
-	statistics.insert({ "uspenost", new Statistic(30) });
+	statistics.insert({ "winRate", new Statistic(30) });
 	statistics.insert({ "reward", new Statistic(30) });
-	statistics.insert({ "dmg", new Statistic(30) });
+	statistics.insert({ "remainingHP", new Statistic(30) });
 }
 
 //Overload prepisany tusim metody OnGameStart
@@ -213,21 +213,24 @@ void MarineBot::GameEnd()
 	float reward = GetGlobalReward();
 	
 	auto units = Observation()->GetUnits(Unit::Alliance::Self);
+	auto remainingHP = 0;
 	for (auto unit : units)
 	{
-		auto feature = feature_[unit->tag];
+		remainingHP += unit->health;
+		auto feature = feature_[unit->tag];		
 		SetFeatures(unit, feature);
 		ql_->Learn(reward, new Stav(feature->to_array()), feature->get_lastAction(), true);
 	}
 	if (units.empty())
 	{
-		statistics["uspenost"]->add(0);
+		statistics["winRate"]->add(0);		
 		cout << "Prehral som. MARINAK. Odmena: " << reward << endl /*<< this->ReportNaKonciHry()*/ << endl;
 	} else
 	{
-		statistics["uspenost"]->add(1);
+		statistics["winRate"]->add(1);
 		cout << "Vyhral som. MARINAK. Odmena: " << reward /*<< this->ReportNaKonciHry()*/ << endl;
 	}
+	statistics["remainingHP"]->add(remainingHP);
 	statistics["reward"]->add(reward);
 	std::cout << "Game ended after: " << Observation()->GetGameLoop() << " loops " << std::endl;
 }

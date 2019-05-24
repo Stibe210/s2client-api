@@ -66,8 +66,8 @@ int QL::ChooseAction(bool vybratNajlepsie, Stav* stav)
 {
 
     float nahoda = ((double)rand() / (RAND_MAX));
-    cout << "NAHODA PREMENNA" << endl;
-    cout << nahoda << endl;
+    //cout << "NAHODA PREMENNA" << endl;
+    //cout << nahoda << endl;
 	//mozno nejaka vazena nahoda podla hodnoty q
 	if (nahoda < EPSILON && !vybratNajlepsie)
 	{
@@ -75,7 +75,7 @@ int QL::ChooseAction(bool vybratNajlepsie, Stav* stav)
         auto pairr = stavy->find(stav);
         if (pairr == stavy->end()) {
             //Taky stav este nebol -> random akcia
-            cout << "BEZ STAVU - uplne random" << endl;
+            //cout << "BEZ STAVU - uplne random" << endl;
             return rand() % pocetAkcii;
         }
         QL::QStav* qSt = pairr->second;
@@ -90,11 +90,11 @@ int QL::ChooseAction(bool vybratNajlepsie, Stav* stav)
         }
         QL::QStav* qSt = pairr->second;
 		float najlepsia = qSt->DajNajvyssieQ();
-        cout << "VYBERAM NAJLEPSIU" << endl;
+        //cout << "VYBERAM NAJLEPSIU" << endl;
 		if (najlepsia <= 0.0)
 		{
 			//Nemame ziadnu najlepsiu -> random (za predpokladu ze nie su zaporne)
-            cout << "NAJLEPSIA SA NENASLA - RANDOM" << endl;
+            //cout << "NAJLEPSIA SA NENASLA - RANDOM" << endl;
 			return rand() % pocetAkcii;
 		}
 		return qSt->DajNajlepsiuAkciu();

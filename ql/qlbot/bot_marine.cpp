@@ -10,6 +10,7 @@
 #include <time.h>
 #include "sc2api/sc2_score.h"
 #include <fstream>
+#include <direct.h>
 
 using namespace sc2;
 using namespace std;
@@ -206,7 +207,11 @@ void MarineBot::GameEnd()
 	++restarts_;
 	if (restarts_ % 5 == 0)
 	{
-		this->ql_->Save(saveFileName + ".csv");
+		//je mozne ze je to windows only prikaz na vytvorenie directory
+		char* directory = "experiments";
+		mkdir(directory);
+		string directoryName(directory);
+		this->ql_->Save(directoryName + "/" + saveFileName + ".csv");
 		save_statistics();
 		cout << "Ukladam po " << restarts_ << " hrach." << endl;
 	}
@@ -538,8 +543,13 @@ void MarineBot::save_statistics()
 {
 	for (auto statistic : statistics)
 	{
+		//na vytvorenie directory
+		char* directory = "experiments";
+		mkdir(directory);
+		string directoryName(directory);
+
 		ofstream file;
-		auto filename = saveFileName+"_" + statistic.first + ".csv";
+		auto filename = directoryName + "/" + saveFileName + "_" + statistic.first + ".csv";
 		std::ifstream ifile(filename);
 		if (!static_cast<bool>(ifile))
 		{

@@ -13,6 +13,7 @@
 #include <iostream>
 #include <limits>
 #include <cfloat>
+#include <direct.h>
 
 
 ZealotBot::ZealotBot(int count) : game_start(0),
@@ -220,7 +221,10 @@ void ZealotBot::OnStep()
 
 void ZealotBot::UlozNaucene()
 {
-    this->ql_->Save("saveQL.csv");
+	char* directory = "experiments";
+	mkdir(directory);
+	string directoryName(directory);
+    this->ql_->Save(directoryName + "/" + "saveQL.csv");
 }
 /*
 void ZealotBot::OnUnitDestroyed(const sc2::Unit* unit)

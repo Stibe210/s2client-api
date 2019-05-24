@@ -68,14 +68,14 @@ void ZealotBot::StartGame()
             Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::PROTOSS_ZEALOT, start, Observation()->GetPlayerID());
         }
         auto enemyPoint = new const sc2::Point2D(15.5, 18);
-        for (int i = 0; i < 1; i++)
-        {
+        //for (int i = 0; i < 1; i++)
+        //{
 
-            int x = 15.5 + (rand() / double(RAND_MAX)) * 4;
-            int y = 11 + (rand() / double(RAND_MAX)) * 4;
-            auto start = new const sc2::Point2D(x, y);
-            Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::PROTOSS_ZEALOT, *start, 2);
-        }
+        //    int x = 15.5 + (rand() / double(RAND_MAX)) * 4;
+        //    int y = 11 + (rand() / double(RAND_MAX)) * 4;
+        //    auto start = new const sc2::Point2D(x, y);
+        //    Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::PROTOSS_ZEALOT, *start, 2);
+        //}
         Debug()->SendDebug();
     }
     

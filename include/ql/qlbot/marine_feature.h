@@ -40,6 +40,8 @@ public:
     float get_weaponCDLastReward();
     void set_weaponCDLastReward(float);
 
+    string toCSV();
+
     vector<int>* to_array();
 
 };

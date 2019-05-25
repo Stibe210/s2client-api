@@ -35,5 +35,5 @@ public:
     virtual int count();
 
     string to_csv_string();
-
+    string GetLastGamesResult();
 };

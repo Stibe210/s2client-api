@@ -11,31 +11,61 @@
 #include "sc2api/sc2_score.h"
 #include <fstream>
 #include <direct.h>
+#include <sstream>
+#include <iomanip>
 
 using namespace sc2;
 using namespace std;
 
-MarineBot::MarineBot() : restarts_(0), radiusQuadrant(5), lastAction(0), step(100)
+
+int MarineBot::experimentNumber = 0;
+
+
+
+string MarineBot::CreateSaveFileParameterPart(double number, string prefix)
 {
+	std::ostringstream streamObj;
+	streamObj << std::fixed;
+	streamObj << std::setprecision(2);
+	streamObj << number;
+	std::string strObj = prefix + streamObj.str();
+	return strObj;
+}
+
+MarineBot::MarineBot(double paAlpha, double paGamma, double paEpsilon) : restarts_(0), radiusQuadrant(5), lastAction(0), step(100) {
 	is_restarting = false;
 	vsZealot = false;
 	unitCount = 3;
 	enemyUnitCount = 1;
-	double const GAMMA = 0.90;
-	double const ALPHA = 0.05;
-	double const EPSILON = 0.75;
+	experimentGameCount = 0;
+	alpha = paAlpha;
+	gamma = paGamma;
+	epsilon = paEpsilon;
 	int const featureCount = 7;
 	int const actionCount = 3;
 	startTime = time(nullptr);
-	saveFileName = "marine_ql24_quadrantsafety";
-	feature_ = *new std::unordered_map<unsigned long long,MarineFeature*>;
+
+	char* directory = "experiments";
+	mkdir(directory);
+	string directoryName(directory);
+
+	saveFileName = directoryName + "/marine_ql_" + to_string(MarineBot::experimentNumber++);
+	saveFileName += CreateSaveFileParameterPart(alpha, "_a");
+	saveFileName += CreateSaveFileParameterPart(gamma, "_g");
+	saveFileName += CreateSaveFileParameterPart(epsilon, "_e");
+
+	feature_ = *new std::unordered_map<unsigned long long, MarineFeature*>;
 	state_ = new Stav(new vector<int>(featureCount, 0));///TODO NATVRDO nasraaaaaat com to tu ide - zaujimavy koment
 	ql_ = new QL(state_, featureCount, actionCount, new QInit());
-	ql_->SetHyperparemeters(ALPHA, GAMMA, EPSILON);
+	ql_->SetHyperparemeters(alpha, gamma, epsilon);
 	ql_->Load(saveFileName + ".csv");
 	statistics.insert({ "winRate", new Statistic(30) });
 	statistics.insert({ "reward", new Statistic(30) });
 	statistics.insert({ "remainingHP", new Statistic(30) });
+}
+
+MarineBot::MarineBot() : MarineBot(0.05,0.90,0.75)
+{
 }
 
 //Overload prepisany tusim metody OnGameStart
@@ -204,14 +234,13 @@ void MarineBot::OnGameEnd()
 //Ak zomrie jedna strana - jednotky
 void MarineBot::GameEnd()
 {
+	experimentGameCount++;
 	++restarts_;
 	if (restarts_ % 5 == 0)
 	{
 		//je mozne ze je to windows only prikaz na vytvorenie directory
-		char* directory = "experiments";
-		mkdir(directory);
-		string directoryName(directory);
-		this->ql_->Save(directoryName + "/" + saveFileName + ".csv");
+		
+		this->ql_->Save(saveFileName + ".csv");
 		save_statistics();
 		cout << "Ukladam po " << restarts_ << " hrach." << endl;
 	}
@@ -549,7 +578,7 @@ void MarineBot::save_statistics()
 		string directoryName(directory);
 
 		ofstream file;
-		auto filename = directoryName + "/" + saveFileName + "_" + statistic.first + ".csv";
+		auto filename = saveFileName + "_" + statistic.first + ".csv";
 		std::ifstream ifile(filename);
 		if (!static_cast<bool>(ifile))
 		{
@@ -589,4 +618,22 @@ float MarineBot::GetLocalReward()
 		rewardToReturn -= 30;
 	}
 	return rewardToReturn;
+}
+
+string MarineBot::ToCSV() {
+	string ret = to_string(alpha) + ";" + to_string(gamma) + ";" + to_string(epsilon) + ";";
+	for (auto stat : statistics) {
+		ret += stat.second->GetLastGamesResult();
+	}
+	ret += "\n";
+	return ret;
+}
+
+MarineBot::~MarineBot() {
+	delete ql_;
+	ql_ = nullptr;
+	delete state_;
+	state_ = nullptr;
+	statistics.clear();
+	feature_.clear();
 }

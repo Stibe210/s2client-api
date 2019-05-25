@@ -186,3 +186,7 @@ int MarineFeature::get_marineCount()
 	return marineCount;
 }
 
+string MarineFeature::toCSV() {
+	return "";
+}
+

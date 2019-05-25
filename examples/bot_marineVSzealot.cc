@@ -34,6 +34,7 @@ int main(int argc, char* argv[]) {
                 std::cout << "Koncim cyklus" << std::endl;
                 do_break = true;
             }
+            
         }
     }
 

@@ -122,3 +122,7 @@ string Statistic::to_csv_string()
     return to_string(count_) + ";" + to_string(mean()) + ";" + to_string(std()) + ";\n";
 }
 
+string Statistic::GetLastGamesResult() {
+	return to_string(mean()) + ";";
+}
+

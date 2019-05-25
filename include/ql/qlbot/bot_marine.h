@@ -8,9 +8,9 @@
 
 class MarineBot : public sc2::Agent
 {
+
     protected:
     uint32_t restarts_;
-    
     std::unordered_map<unsigned long long, MarineFeature*> feature_;
     QL* ql_;
     Stav* state_;
@@ -21,13 +21,19 @@ class MarineBot : public sc2::Agent
     int enemyUnitCount;
     bool vsZealot;
 
+    double alpha;
+    double gamma;
+    double epsilon;
+
+    int actualGameCount;
+
     const float radiusQuadrant; //velkost radiusu kvadrantu
     int lastAction;
     int step;
     time_t startTime;
     string saveFileName;
-    void SetFeatures(const sc2::Unit*, MarineFeature*&);
-    
+
+    void SetFeatures(const sc2::Unit*, MarineFeature*&);    
     vector<float>* GetFeatureQuadrant(const sc2::Unit*);
 
     void ActionMoveBack(const sc2::Unit*);
@@ -42,15 +48,21 @@ class MarineBot : public sc2::Agent
     void save_statistics();
     float GetGlobalReward();
     float GetLocalReward();
-
+    string CreateSaveFileParameterPart(double, string);
     void GameStart();
     void GameEnd();
     
 public:
+    int experimentGameCount;
+    int static experimentNumber;
+
     MarineBot();
+    MarineBot(double, double, double);
+    ~MarineBot();
     void OnGameStart() override;
     void OnStep() override;
     void OnGameEnd() override;
+    string ToCSV();
     
     
 };

@@ -112,7 +112,7 @@ void ZealotBot::StartGame()
                 int x = 15.5 + (rand() / double(RAND_MAX)) * 4;
                 int y = 11 + (rand() / double(RAND_MAX)) * 4;
                 auto enemy_start = new const sc2::Point2D(x, y);
-                Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::TERRAN_MARINE, *enemy_start, 2);
+                Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::TERRAN_MARINE, *enemy_start, 1);
             }
         }
         Debug()->SendDebug();

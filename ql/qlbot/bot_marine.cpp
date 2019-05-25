@@ -603,7 +603,7 @@ float MarineBot::GetGlobalReward()
 //Vrati lokalnu odmenu
 //momentalne 
 float MarineBot::GetLocalReward()
-{
+{	
 	float rewardToReturn = 10;
 	auto alliedUnits = Observation()->GetUnits(Unit::Alliance::Self);
 	for (auto unit : alliedUnits)

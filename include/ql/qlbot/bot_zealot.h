@@ -11,6 +11,7 @@ class ZealotBot : public sc2::Agent
 {
     long game_start;
     bool is_restarting = false;
+    bool is_vs_pc;
     double alpha;
     double gamma;
     double epsilon;
@@ -38,7 +39,7 @@ class ZealotBot : public sc2::Agent
 public:
     int static experimentNumber;
     ZealotBot(int count = 0);
-    ZealotBot(double, double, double, int count = 0);
+    ZealotBot(double, double, double, int count = 1, bool is_vs_pc = false);
     void Vypis(std::string);
     void OnGameStart() override final;
     void OnStep() override final;

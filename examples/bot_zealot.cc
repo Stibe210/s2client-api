@@ -72,14 +72,14 @@ int main(int argc, char* argv[]) {
         coordinator.SetMultithreaded(true);
         // Add the custom bot, it will control the players.
         //ZealotBot zealot(1);
-        ZealotBot zealot1(alpha, gamma, epsilon, 1);
+        ZealotBot zealot1(alpha, gamma, epsilon, 1, true);
         //ZealotBot zealot2(2);
 
         FooBot human;
         coordinator.SetParticipants({
-            CreateParticipant(sc2::Race::Terran, &zealot1), //aj ked je to takto, tak hrac dostane kontrolu "player 1" teda marinakov
+            CreateParticipant(sc2::Race::Protoss, &zealot1), //aj ked je to takto, tak hrac dostane kontrolu "player 1" teda marinakov
             //CreateParticipant(sc2::Race::Terran, &zealot2)
-            CreateComputer(sc2::Race::Protoss)
+            CreateComputer(sc2::Race::Terran)
             });
         //coordinator.SetRealtime(true);
         // Start the game.

@@ -51,10 +51,11 @@ ZealotBot::ZealotBot(int count) : game_start(0),
     printf("Nacitane snad ");
 }
 
-ZealotBot::ZealotBot(double pAlpha, double pGamma, double pEpsilon, int count) : ZealotBot(count) {
+ZealotBot::ZealotBot(double pAlpha, double pGamma, double pEpsilon, int count, bool p_is_vs_pc) : ZealotBot(count) {
 	alpha = pAlpha;
 	gamma = pGamma;
 	epsilon = pEpsilon;
+    is_vs_pc = p_is_vs_pc;
 }
 
 string ZealotBot::CreateSaveFileParameterPart(double number, string prefix)
@@ -92,25 +93,28 @@ void ZealotBot::StartGame()
                 Debug()->DebugKillUnit(unit);
             }
         }
-        if (!enemy_units.empty())
-        {
-            for (auto unit : enemy_units)
-                Debug()->DebugKillUnit(unit);
-        }
         auto start = Observation()->GetGameInfo().start_locations.back();
         for (auto i = 0; i < start_count; i++)
         {
             Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::PROTOSS_ZEALOT, start, Observation()->GetPlayerID());
         }
-        auto enemyPoint = new const sc2::Point2D(15.5, 18);
-        //for (int i = 0; i < 1; i++)
-        //{
+        if (is_vs_pc)
+        {
+            if (!enemy_units.empty())
+            {
+                for (auto unit : enemy_units)
+                    Debug()->DebugKillUnit(unit);
+            }
+            auto enemyPoint = new const sc2::Point2D(15.5, 18);
+            for (int i = 0; i < 3; i++)
+            {
 
-        //    int x = 15.5 + (rand() / double(RAND_MAX)) * 4;
-        //    int y = 11 + (rand() / double(RAND_MAX)) * 4;
-        //    auto start = new const sc2::Point2D(x, y);
-        //    Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::PROTOSS_ZEALOT, *start, 2);
-        //}
+                int x = 15.5 + (rand() / double(RAND_MAX)) * 4;
+                int y = 11 + (rand() / double(RAND_MAX)) * 4;
+                auto enemy_start = new const sc2::Point2D(x, y);
+                Debug()->DebugCreateUnit(sc2::UNIT_TYPEID::TERRAN_MARINE, *enemy_start, 2);
+            }
+        }
         Debug()->SendDebug();
     }
     

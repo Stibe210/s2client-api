@@ -50,7 +50,7 @@ MarineBot::MarineBot(double paAlpha, double paGamma, double paEpsilon, bool vsze
 	mkdir(directory);
 	string directoryName(directory);
 
-	saveFileName = directoryName + "/marine_ql_" + to_string(MarineBot::experimentNumber++);
+	saveFileName = directoryName + "/marine_ql_");
 	saveFileName += CreateSaveFileParameterPart(alpha, "_a");
 	saveFileName += CreateSaveFileParameterPart(gamma, "_g");
 	saveFileName += CreateSaveFileParameterPart(epsilon, "_e");

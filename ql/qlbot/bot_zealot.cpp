@@ -40,7 +40,7 @@ ZealotBot::ZealotBot(int count) : game_start(0),
 	mkdir(directory);
 	string directoryName(directory);
 
-	saveFileName = directoryName + "/marine_ql_" + to_string(ZealotBot::experimentNumber++);
+	saveFileName = directoryName + "/zealot_ql_");
 	saveFileName += CreateSaveFileParameterPart(alpha, "_a");
 	saveFileName += CreateSaveFileParameterPart(gamma, "_g");
 	saveFileName += CreateSaveFileParameterPart(epsilon, "_e");

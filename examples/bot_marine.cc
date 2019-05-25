@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
         // Add the custom bot, it will control the players.
         //ZealotBot zealot;
     
-        MarineBot marine(alpha, gamma, epsilon);
+        MarineBot marine(alpha, gamma, epsilon, false);
 
         coordinator.SetParticipants({
             CreateParticipant(sc2::Race::Terran, &marine)/*,

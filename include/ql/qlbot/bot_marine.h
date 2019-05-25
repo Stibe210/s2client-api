@@ -51,13 +51,13 @@ class MarineBot : public sc2::Agent
     string CreateSaveFileParameterPart(double, string);
     void GameStart();
     void GameEnd();
-    
+    bool isVsPC;
 public:
     int experimentGameCount;
     int static experimentNumber;
 
     MarineBot();
-    MarineBot(double, double, double);
+    MarineBot(double, double, double, bool);
     ~MarineBot();
     void OnGameStart() override;
     void OnStep() override;

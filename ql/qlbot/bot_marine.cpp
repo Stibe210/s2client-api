@@ -32,7 +32,7 @@ string MarineBot::CreateSaveFileParameterPart(double number, string prefix)
 	return strObj;
 }
 
-MarineBot::MarineBot(double paAlpha, double paGamma, double paEpsilon) : restarts_(0), radiusQuadrant(5), lastAction(0), step(100) {
+MarineBot::MarineBot(double paAlpha, double paGamma, double paEpsilon, bool vszealot) : restarts_(0), radiusQuadrant(5), lastAction(0), step(100) {
 	is_restarting = false;
 	vsZealot = false;
 	unitCount = 3;
@@ -44,6 +44,7 @@ MarineBot::MarineBot(double paAlpha, double paGamma, double paEpsilon) : restart
 	int const featureCount = 7;
 	int const actionCount = 3;
 	startTime = time(nullptr);
+	vsZealot = vszealot;
 
 	char* directory = "experiments";
 	mkdir(directory);
@@ -64,7 +65,7 @@ MarineBot::MarineBot(double paAlpha, double paGamma, double paEpsilon) : restart
 	statistics.insert({ "remainingHP", new Statistic(30) });
 }
 
-MarineBot::MarineBot() : MarineBot(0.05,0.90,0.75)
+MarineBot::MarineBot() : MarineBot(0.05,0.90,0.75, true)
 {
 }
 
@@ -159,10 +160,8 @@ void MarineBot::OnStep()
 			GameStart();
 			is_restarting = false;
 			return;
-		}
-		
-	}
-	
+		}		
+	}	
     
     if (game_loop % step != 0)
         return;

@@ -22,7 +22,7 @@ int main(int argc, char* argv[]) {
     }
     coordinator.SetMultithreaded(true);
     // Add the custom bot, it will control the players.
-    MarineBot marine(alpha, gamma, epsilon);
+    MarineBot marine(alpha, gamma, epsilon, true);
     ZealotBot zealot(alpha, gamma, epsilon, 1);
 
     coordinator.SetParticipants({

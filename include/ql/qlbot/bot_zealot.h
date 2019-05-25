@@ -4,15 +4,16 @@
 //#include "../build/QLLib/QLLib/QL.h"
 #include "qllib/Stav.h"
 #include "qllib/QL.h"
+#include "statistic.h"
 
 using namespace std;
 class ZealotBot : public sc2::Agent
 {
     long game_start;
     bool is_restarting = false;
-    double ALPHA;
-    double GAMMA;
-    double EPSILON;
+    double alpha;
+    double gamma;
+    double epsilon;
     uint32_t restarts_;
     const double pi;
     float dmg;
@@ -25,13 +26,19 @@ class ZealotBot : public sc2::Agent
     int start_count;
     int step;
     ZealotState* zstav_;
+    map<string, Statistic*> statistics{};
     QL* ql_;
     Stav* state_;
     void get_state(const sc2::Unit& unit) const;
+    void save_statistics();
     void triangulate(float speed, float degree, float& x, float& y) const;
+    string saveFileName;
+    string CreateSaveFileParameterPart(double, string);
 
 public:
+    int static experimentNumber;
     ZealotBot(int count = 0);
+    ZealotBot(double, double, double, int count = 0);
     void Vypis(std::string);
     void OnGameStart() override final;
     void OnStep() override final;
@@ -41,6 +48,7 @@ public:
     void StrategiaUtoc(const sc2::Unit*);
     void HladajNepriatela(const sc2::Unit*);
     void UlozNaucene();
+    string ToCSV();
     //virtual void OnUnitDestroyed(const sc2::Unit* unit) override;
     string ReportNaKonciHry();
     //vector<int>* DajStav();

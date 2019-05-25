@@ -14,23 +14,57 @@
 #include <limits>
 #include <cfloat>
 #include <direct.h>
+#include <fstream>
+#include <iomanip>
+#include <sstream>
 
+
+int ZealotBot::experimentNumber = 0;
 
 ZealotBot::ZealotBot(int count) : game_start(0),
                                   restarts_(0), pi(atan(1) * 4), dmg(0), hp(0), shield(0), jeVypis(true), lastAction(0),
                                   reward(0), global_reward(0), start_count(count), step(100)
 {
     //TODO: upravit bota pre hyperparametre epsilon a alfa (vyber nahodneho stavu a learning rate)
-    GAMMA = 0.9;
-    ALPHA = 0.05;
-    EPSILON = 0.75;
+    gamma = 0.9;
+    alpha = 0.05;
+    epsilon = 0.75;
     srand(time(NULL));
     zstav_ = new ZealotState();
     state_ = new Stav(new vector<int>(5, 0)); ///TODO NATVRDO nasraaaaaat com to tu ide
     ql_ = new QL(state_, 5, 3, new QInitZealot());
-    ql_->SetHyperparemeters(ALPHA, GAMMA, EPSILON);
+    ql_->SetHyperparemeters(alpha, gamma, epsilon);
     //ql_->Load("saveQL.csv");
+
+	char* directory = "experiments";
+	mkdir(directory);
+	string directoryName(directory);
+
+	saveFileName = directoryName + "/marine_ql_" + to_string(ZealotBot::experimentNumber++);
+	saveFileName += CreateSaveFileParameterPart(alpha, "_a");
+	saveFileName += CreateSaveFileParameterPart(gamma, "_g");
+	saveFileName += CreateSaveFileParameterPart(epsilon, "_e");
+
+	statistics.insert({ "winRate", new Statistic(30) });
+	statistics.insert({ "reward", new Statistic(30) });
+	statistics.insert({ "remainingHP", new Statistic(30) });
     printf("Nacitane snad ");
+}
+
+ZealotBot::ZealotBot(double pAlpha, double pGamma, double pEpsilon, int count) : ZealotBot(count) {
+	alpha = pAlpha;
+	gamma = pGamma;
+	epsilon = pEpsilon;
+}
+
+string ZealotBot::CreateSaveFileParameterPart(double number, string prefix)
+{
+	std::ostringstream streamObj;
+	streamObj << std::fixed;
+	streamObj << std::setprecision(2);
+	streamObj << number;
+	std::string strObj = prefix + streamObj.str();
+	return strObj;
 }
 
 void ZealotBot::Vypis(std::string sprava)
@@ -267,17 +301,26 @@ void ZealotBot::EndGame()
         //Priebezne uklada to je asi len docasne alebo sa potom zvacsi interval
         //ak by padlo a podobne
         cout << "\n Ukladam.\n" << endl;
+		save_statistics();
     }
     //cout << Observation()->GetUnitTypeData().at(static_cast<int>(sc2::UNIT_TYPEID::PROTOSS_ZEALOT)).l;
     sc2::Units units = Observation()->GetUnits(sc2::Unit::Alliance::Self);
+	double remainingHP = 0;
+	
+	statistics["reward"]->add(reward);
     if (!units.empty())
     {
+		remainingHP += units[0]->health;
+		statistics["remainingHP"]->add(remainingHP);
+		statistics["winRate"]->add(1);
         reward += 1000;
         global_reward += reward;
         cout << "Vyhral som. " << this->ReportNaKonciHry() << endl;
         ql_->Learn(reward, new Stav(zstav_->to_array()), lastAction, false);
         return;
     }
+	statistics["winRate"]->add(0);
+	statistics["remainingHP"]->add(remainingHP);
     cout << "Prehral som. " << endl << this->ReportNaKonciHry() << endl;
 }
 
@@ -299,6 +342,31 @@ void ZealotBot::OnGameEnd()
     std::cout << "Game ended after: " << Observation()->GetGameLoop() << " loops " << std::endl;
 }
 
+void ZealotBot::save_statistics()
+{
+	for (auto statistic : statistics)
+	{
+		//na vytvorenie directory
+		char* directory = "experiments";
+		mkdir(directory);
+		string directoryName(directory);
+
+		ofstream file;
+		auto filename = saveFileName + "_" + statistic.first + ".csv";
+		std::ifstream ifile(filename);
+		if (!static_cast<bool>(ifile))
+		{
+			file.open(filename, std::ios_base::app);
+			file << "sep=; \n";
+		}
+		else
+		{
+			file.open(filename, std::ios_base::app);
+		}
+		file << statistic.second->to_csv_string();
+		file.close();
+	}
+}
 
 /*
 *	Pokusi sa vybrat najvhodnejsiu cestu ktorou by sa dostal od protivnikou
@@ -578,4 +646,12 @@ void ZealotBot::triangulate(const float speed, const float degree, float& x, flo
 {
     x = cos(degree * pi / 180) * speed;
     y = sin(degree * pi / 180) * speed;
+}
+
+string ZealotBot::ToCSV() {
+	string ret = to_string(alpha) + ";" + to_string(gamma) + ";" + to_string(epsilon) + ";";
+	for (auto stat : statistics) {
+		ret += stat.second->GetLastGamesResult();
+	}
+	return ret;
 }

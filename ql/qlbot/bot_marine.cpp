@@ -625,7 +625,6 @@ string MarineBot::ToCSV() {
 	for (auto stat : statistics) {
 		ret += stat.second->GetLastGamesResult();
 	}
-	ret += "\n";
 	return ret;
 }
 

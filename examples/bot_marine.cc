@@ -19,8 +19,12 @@ void LaunchGame(sc2::Coordinator coordinator)
 int main(int argc, char* argv[]) {
 
     srand(time(NULL));
-    int pocetHier = 10;
-    for (int i = 0; i < 2; i++) {
+    int pocetHier = 100;
+    int pocetPokusov = 2;
+    double alpha = 0.10;
+    double gamma = 0.90;
+    double epsilon = 0.75;
+    for (int i = 0; i < pocetPokusov; i++) {
         sc2::Coordinator coordinator;
         if (!coordinator.LoadSettings(argc, argv)) {
             return 1;
@@ -29,7 +33,7 @@ int main(int argc, char* argv[]) {
         // Add the custom bot, it will control the players.
         //ZealotBot zealot;
     
-        MarineBot marine(0.10,0.90,0.75);
+        MarineBot marine(alpha, gamma, epsilon);
 
         coordinator.SetParticipants({
             CreateParticipant(sc2::Race::Terran, &marine)/*,
@@ -58,8 +62,7 @@ int main(int argc, char* argv[]) {
 
         std::ofstream file;
         file.open("experiments/bot_marine.csv", std::ios::out | std::ios::app);
-        file << pocetHier << ";" << marine.ToCSV();
-        //marine.~MarineBot();
+        file << pocetHier << ";" << marine.ToCSV() << endl;
     }
 
     return 0;

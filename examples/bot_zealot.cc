@@ -7,6 +7,8 @@
 #include "qlbot/bot_marine.h"
 #include "qlbot/bot_ql_test.h"
 
+#include <fstream>
+
 class Human : public sc2::Agent {
 
 
@@ -52,37 +54,55 @@ private:
 
 //*************************************************************************************************
 int main(int argc, char* argv[]) {
-    sc2::Coordinator coordinator;
-    if (!coordinator.LoadSettings(argc, argv)) {
-        return 1;
-    }
-    coordinator.SetMultithreaded(true);
-    // Add the custom bot, it will control the players.
-    //ZealotBot zealot(1);
-    ZealotBot zealot1(1);
-    //ZealotBot zealot2(2);
 
-    FooBot human;
-    coordinator.SetParticipants({
-        CreateParticipant(sc2::Race::Terran, &zealot1), //aj ked je to takto, tak hrac dostane kontrolu "player 1" teda marinakov
-        //CreateParticipant(sc2::Race::Terran, &zealot2)
-        CreateComputer(sc2::Race::Protoss)
-        });
-    //coordinator.SetRealtime(true);
-    // Start the game.
-    coordinator.LaunchStarcraft();
+    //kolko hier ma trvat jedna replikacia
+    int pocetHier = 100;
 
-    // Step forward the game simulation.
-    bool do_break = false;
-    while (!do_break) {
-        coordinator.StartGame(sc2::kMapSmallMap2);
-        while (coordinator.Update() && !do_break) {
-            if (sc2::PollKeyPress()) {
-                std::cout << "Koncim cyklus" << std::endl;
-                do_break = true;
+    //kolko replikacii
+    int pocetPokusov = 2;
+
+    double alpha = 0.10;
+    double gamma = 0.90;
+    double epsilon = 0.75;
+    for (int i = 0; i < pocetPokusov; i++) {
+        sc2::Coordinator coordinator;
+        if (!coordinator.LoadSettings(argc, argv)) {
+            return 1;
+        }
+        coordinator.SetMultithreaded(true);
+        // Add the custom bot, it will control the players.
+        //ZealotBot zealot(1);
+        ZealotBot zealot1(alpha, gamma, epsilon, 1);
+        //ZealotBot zealot2(2);
+
+        FooBot human;
+        coordinator.SetParticipants({
+            CreateParticipant(sc2::Race::Terran, &zealot1), //aj ked je to takto, tak hrac dostane kontrolu "player 1" teda marinakov
+            //CreateParticipant(sc2::Race::Terran, &zealot2)
+            CreateComputer(sc2::Race::Protoss)
+            });
+        //coordinator.SetRealtime(true);
+        // Start the game.
+        coordinator.LaunchStarcraft();
+
+        // Step forward the game simulation.
+        bool do_break = false;
+        while (!do_break) {
+            coordinator.StartGame(sc2::kMapSmallMap2);
+            while (coordinator.Update() && !do_break) {
+                if (sc2::PollKeyPress()) {
+                    std::cout << "Koncim cyklus" << std::endl;
+                    do_break = true;
+                }
             }
         }
+
+        std::ofstream file;
+        file.open("experiments/bot_zealot.csv", std::ios::out | std::ios::app);
+        file << pocetHier << ";" << zealot1.ToCSV() << endl;
+
+        return 0;
     }
 
-    return 0;
+    
 }

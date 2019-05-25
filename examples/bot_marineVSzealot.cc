@@ -5,21 +5,30 @@
 #include <iostream>
 #include "qlbot/bot_zealot.h"
 #include "qlbot/bot_marine.h"
+#include <fstream>
 
 //*************************************************************************************************
 int main(int argc, char* argv[]) {
+
+    int pocetHier = 100;
+    int pocetPokusov = 1;
+    double alpha = 0.10;
+    double gamma = 0.90;
+    double epsilon = 0.75;
+    for (int i = 0; i < pocetPokusov; i++) {
     sc2::Coordinator coordinator;
     if (!coordinator.LoadSettings(argc, argv)) {
         return 1;
     }
     coordinator.SetMultithreaded(true);
     // Add the custom bot, it will control the players.
-    MarineBot zealot;
-    ZealotBot marine;
+    MarineBot marine(alpha, gamma, epsilon);
+    ZealotBot zealot(alpha, gamma, epsilon,1);
 
     coordinator.SetParticipants({
-        CreateParticipant(sc2::Race::Protoss, &zealot),
-        CreateParticipant(sc2::Race::Terran, &marine)        
+        CreateParticipant(sc2::Race::Terran, &marine),
+        CreateParticipant(sc2::Race::Protoss, &zealot)
+             
         });
     //coordinator.SetRealtime(true);
     // Start the game.
@@ -33,10 +42,14 @@ int main(int argc, char* argv[]) {
             if (sc2::PollKeyPress()) {
                 std::cout << "Koncim cyklus" << std::endl;
                 do_break = true;
-            }
-            
+            }            
         }
     }
 
+    std::ofstream file;
+    file.open("experiments/bot_marineVSzealot.csv", std::ios::out | std::ios::app);
+    file << pocetHier << ";" << marine.ToCSV() << zealot.ToCSV() << endl;
+
     return 0;
+    }
 }

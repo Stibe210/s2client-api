@@ -202,7 +202,7 @@ void ZealotBot::OnStep()
         float pomocna = Observation()->GetScore().score_details.total_damage_dealt.life;
         pomocna += Observation()->GetScore().score_details.total_damage_dealt.shields;
         pomocna += Observation()->GetScore().score_details.total_damage_dealt.energy;
-        reward = pomocna - dmg;
+		reward = GetLocalReward();
         global_reward += reward;
         /*
          * Mozna odmena dobuducna (hp, shield)
@@ -257,6 +257,30 @@ void ZealotBot::OnStep()
     //auto lower_right = new sc2::Point3D(start.x + 2, start.y + 2, 1);
     //Debug()->DebugBoxOut(*upper_left, *lower_right, sc2::Colors::Red);
     //Debug()->SendDebug();
+}
+
+float ZealotBot::GetLocalReward()
+{
+	float rewardToReturn = 0;
+	auto alliedUnits = Observation()->GetUnits(sc2::Unit::Alliance::Self);
+	for (auto unit : alliedUnits)
+		//rewardToReturn += unit->health; //marine ma 45 hp, konstantou prikladavame vacsiu dolezitost na to, ci je marine zivy, ako to, kolko ma hp
+		rewardToReturn += 30;
+	auto enemyUnits = Observation()->GetUnits(sc2::Unit::Enemy);
+	for (auto unit : enemyUnits)
+	{
+		//rewardToReturn -= (unit->health); //zealot ma cca 150 hp aj so shieldom, tak trosku menej nech neni su zaporne rewardy
+		//rewardToReturn -= unit->shield;
+		rewardToReturn -= 10;
+	}
+	return rewardToReturn;
+}
+
+//Vrati globalnu odmenu
+//momentalne 50*lokalna
+float ZealotBot::GetGlobalReward()
+{
+	return GetLocalReward() * 50;
 }
 
 void ZealotBot::UlozNaucene()

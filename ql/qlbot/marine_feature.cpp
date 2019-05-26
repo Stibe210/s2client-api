@@ -13,6 +13,9 @@ MarineFeature::MarineFeature() : hp(0), marineCount(0), distanceFromClosestEnemy
 
 MarineFeature::~MarineFeature() 
 {
+	delete quadrantSafety;
+	quadrantSafety = nullptr;
+
 }
 
 void MarineFeature::set_hp(float hpPer, float health)

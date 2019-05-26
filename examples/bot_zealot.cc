@@ -57,7 +57,7 @@ private:
 int main(int argc, char* argv[]) {
 
     //kolko hier ma trvat jedna replikacia
-    int pocetHier = 100;
+    int pocetHier = 11;
 
     //kolko replikacii
     int pocetPokusov = 2;
@@ -97,6 +97,9 @@ int main(int argc, char* argv[]) {
                     std::cout << "Koncim cyklus" << std::endl;
                     do_break = true;
                 }
+                if (zealot1.experimentGameCount == pocetHier) {
+                    do_break = true;
+                }
             }
         }
 
@@ -104,8 +107,8 @@ int main(int argc, char* argv[]) {
         file.open("experiments/bot_zealot.csv", std::ios::out | std::ios::app);
         file << pocetHier << ";" << zealot1.ToCSV() << endl;
 
-        return 0;
+        
     }
-
+    return 0;
     
 }

@@ -10,10 +10,10 @@
 //*************************************************************************************************
 int main(int argc, char* argv[]) {
 
-    int pocetHier = 100;
-    int pocetPokusov = 1;
-    double alpha = 0.10;
-    double gamma = 0.90;
+    int pocetHier = 11;
+    int pocetPokusov = 2;
+    double alpha = 0.050;
+    double gamma = 0.80;
     double epsilon = 0.75;
     for (int i = 0; i < pocetPokusov; i++) {
     sc2::Coordinator coordinator;
@@ -42,7 +42,10 @@ int main(int argc, char* argv[]) {
             if (sc2::PollKeyPress()) {
                 std::cout << "Koncim cyklus" << std::endl;
                 do_break = true;
-            }            
+            }
+            if (marine.experimentGameCount == pocetHier || zealot.experimentGameCount == pocetHier) {
+                do_break = true;
+            }
         }
     }
 
@@ -50,6 +53,7 @@ int main(int argc, char* argv[]) {
     file.open("experiments/bot_marineVSzealot.csv", std::ios::out | std::ios::app);
     file << pocetHier << ";" << marine.ToCSV() << zealot.ToCSV() << endl;
 
-    return 0;
+    
     }
+    return 0;
 }

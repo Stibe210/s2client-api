@@ -18,7 +18,6 @@ using namespace sc2;
 using namespace std;
 
 
-int MarineBot::experimentNumber = 0;
 
 
 
@@ -50,7 +49,7 @@ MarineBot::MarineBot(double paAlpha, double paGamma, double paEpsilon, bool vsze
 	mkdir(directory);
 	string directoryName(directory);
 
-	saveFileName = directoryName + "/marine_ql_");
+	saveFileName = directoryName + "/marine_ql_";
 	saveFileName += CreateSaveFileParameterPart(alpha, "_a");
 	saveFileName += CreateSaveFileParameterPart(gamma, "_g");
 	saveFileName += CreateSaveFileParameterPart(epsilon, "_e");

@@ -37,6 +37,7 @@ class ZealotBot : public sc2::Agent
     string CreateSaveFileParameterPart(double, string);
 
 public:
+    int experimentGameCount;
     int static experimentNumber;
     ZealotBot(int count = 0);
     ZealotBot(double, double, double, int count = 1, bool is_vs_pc = false);

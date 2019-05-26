@@ -21,26 +21,34 @@
 
 int ZealotBot::experimentNumber = 0;
 
-ZealotBot::ZealotBot(int count) : game_start(0),
-                                  restarts_(0), pi(atan(1) * 4), dmg(0), hp(0), shield(0), jeVypis(true), lastAction(0),
-                                  reward(0), global_reward(0), start_count(count), step(100)
+ZealotBot::ZealotBot(int count) : ZealotBot(0.1,0.9,0.75)
 {
     //TODO: upravit bota pre hyperparametre epsilon a alfa (vyber nahodneho stavu a learning rate)
-    gamma = 0.9;
-    alpha = 0.05;
-    epsilon = 0.75;
-    srand(time(NULL));
-    zstav_ = new ZealotState();
-    state_ = new Stav(new vector<int>(5, 0)); ///TODO NATVRDO nasraaaaaat com to tu ide
-    ql_ = new QL(state_, 5, 3, new QInitZealot());
-    ql_->SetHyperparemeters(alpha, gamma, epsilon);
-    //ql_->Load("saveQL.csv");
+
+	
+    
+}
+
+ZealotBot::ZealotBot(double pAlpha, double pGamma, double pEpsilon, int count, bool p_is_vs_pc) : game_start(0),
+restarts_(0), pi(atan(1) * 4), dmg(0), hp(0), shield(0), jeVypis(true), lastAction(0),
+reward(0), global_reward(0), start_count(count), step(100) {
+	alpha = pAlpha;
+	gamma = pGamma;
+	epsilon = pEpsilon;
+    is_vs_pc = p_is_vs_pc;
+
+	srand(time(NULL));
+	zstav_ = new ZealotState();
+	state_ = new Stav(new vector<int>(5, 0)); ///TODO NATVRDO nasraaaaaat com to tu ide
+	ql_ = new QL(state_, 5, 3, new QInitZealot());
+	ql_->SetHyperparemeters(alpha, gamma, epsilon);
+	//ql_->Load("saveQL.csv");
 
 	char* directory = "experiments";
 	mkdir(directory);
 	string directoryName(directory);
 
-	saveFileName = directoryName + "/zealot_ql_");
+	saveFileName = directoryName + "/zealot_ql_";
 	saveFileName += CreateSaveFileParameterPart(alpha, "_a");
 	saveFileName += CreateSaveFileParameterPart(gamma, "_g");
 	saveFileName += CreateSaveFileParameterPart(epsilon, "_e");
@@ -48,14 +56,8 @@ ZealotBot::ZealotBot(int count) : game_start(0),
 	statistics.insert({ "winRate", new Statistic(30) });
 	statistics.insert({ "reward", new Statistic(30) });
 	statistics.insert({ "remainingHP", new Statistic(30) });
-    printf("Nacitane snad ");
-}
-
-ZealotBot::ZealotBot(double pAlpha, double pGamma, double pEpsilon, int count, bool p_is_vs_pc) : ZealotBot(count) {
-	alpha = pAlpha;
-	gamma = pGamma;
-	epsilon = pEpsilon;
-    is_vs_pc = p_is_vs_pc;
+	printf("Nacitane snad ");
+	experimentGameCount = 0;
 }
 
 string ZealotBot::CreateSaveFileParameterPart(double number, string prefix)
@@ -259,10 +261,7 @@ void ZealotBot::OnStep()
 
 void ZealotBot::UlozNaucene()
 {
-	char* directory = "experiments";
-	mkdir(directory);
-	string directoryName(directory);
-    this->ql_->Save(directoryName + "/" + "saveQL.csv");
+    this->ql_->Save(saveFileName + ".csv");
 }
 /*
 void ZealotBot::OnUnitDestroyed(const sc2::Unit* unit)
@@ -299,6 +298,7 @@ void ZealotBot::OnUnitDestroyed(const sc2::Unit* unit)
 void ZealotBot::EndGame()
 {
     ++restarts_;
+	experimentGameCount++;
     if (restarts_ % 10 == 0)
     {
         this->UlozNaucene();
@@ -319,13 +319,13 @@ void ZealotBot::EndGame()
 		statistics["winRate"]->add(1);
         reward += 1000;
         global_reward += reward;
-        cout << "Vyhral som. " << this->ReportNaKonciHry() << endl;
+        cout << "Vyhral som. " << /*this->ReportNaKonciHry() << */endl;
         ql_->Learn(reward, new Stav(zstav_->to_array()), lastAction, false);
         return;
     }
 	statistics["winRate"]->add(0);
 	statistics["remainingHP"]->add(remainingHP);
-    cout << "Prehral som. " << endl << this->ReportNaKonciHry() << endl;
+    cout << "Prehral som. " << endl << /*this->ReportNaKonciHry() << */ endl;
 }
 
 

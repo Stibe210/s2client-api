@@ -6,7 +6,7 @@ MarineFeature::MarineFeature(int paFeatureCount) : hp(0), marineCount(0), distan
 	quadrantSafety = new vector<int>(4,0);
 }
 
-MarineFeature::MarineFeature() : hp(0), distanceFromClosestEnemy(0), featureCount(7), lastAction(-1), hpValue(0), weaponCD(0)
+MarineFeature::MarineFeature() : hp(0), marineCount(0), distanceFromClosestEnemy(0), featureCount(7), lastAction(-1), hpValue(0), weaponCD(0)
 {
 	quadrantSafety = new vector<int>(4,0);
 }

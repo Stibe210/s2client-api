@@ -10,8 +10,8 @@
 //*************************************************************************************************
 int main(int argc, char* argv[]) {
 
-    int pocetHier = 11;
-    int pocetPokusov = 2;
+    int pocetHier = 1000;
+    int pocetPokusov = 1;
     double alpha = 0.050;
     double gamma = 0.80;
     double epsilon = 0.75;

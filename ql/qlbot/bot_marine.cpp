@@ -195,7 +195,7 @@ void MarineBot::OnStep()
 		float reward = GetLocalReward(); //zakomentovany predchadzajuci kod a skuska davat globalnu odmenu ako lokalnu
 		ql_->Learn(reward, new Stav(feature->to_array()), feature->get_lastAction(), false);
 		SetFeatures(unit, feature);		
-		const int action = ql_->ChooseAction(true, new Stav(feature->to_array()));
+		const int action = ql_->ChooseAction(false, new Stav(feature->to_array()));
 		switch (action)
 		{
 		case 0:
@@ -603,7 +603,7 @@ float MarineBot::GetGlobalReward()
 //momentalne 
 float MarineBot::GetLocalReward()
 {	
-	float rewardToReturn = 10;
+	float rewardToReturn = 0;
 	auto alliedUnits = Observation()->GetUnits(Unit::Alliance::Self);
 	for (auto unit : alliedUnits)
 		//rewardToReturn += unit->health; //marine ma 45 hp, konstantou prikladavame vacsiu dolezitost na to, ci je marine zivy, ako to, kolko ma hp

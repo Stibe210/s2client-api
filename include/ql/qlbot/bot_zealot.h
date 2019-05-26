@@ -33,9 +33,14 @@ class ZealotBot : public sc2::Agent
     void get_state(const sc2::Unit& unit) const;
     void save_statistics();
     void triangulate(float speed, float degree, float& x, float& y) const;
+    
     string saveFileName;
     string CreateSaveFileParameterPart(double, string);
 
+
+protected:
+    float GetLocalReward();
+    float GetGlobalReward();
 public:
     int experimentGameCount;
     int static experimentNumber;

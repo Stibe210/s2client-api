@@ -37,7 +37,7 @@ reward(0), global_reward(0), start_count(count), step(100) {
 	epsilon = pEpsilon;
     is_vs_pc = p_is_vs_pc;
 
-	srand(time(NULL));
+	//srand(time(NULL));
 	zstav_ = new ZealotState();
 	state_ = new Stav(new vector<int>(5, 0)); ///TODO NATVRDO nasraaaaaat com to tu ide
 	ql_ = new QL(state_, 5, 3, new QInitZealot());

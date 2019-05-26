@@ -27,6 +27,12 @@ private:
     float zmenaEPSILON = 0.9998;// 0.999;
     QInit* qInit = nullptr;
 
+    int lcgM = 2147483647;
+    int lcgA = 48271;
+    int lcgC = 0;
+    unsigned long int lcgX = 0;
+
+
 
 
 
@@ -44,6 +50,7 @@ public:
     int DajPocetUceni();
     void PremazMinulyStav();
     void ZmenAlgaritmus(int algaritmus);
+    double VypocitajNahodneCislo();
     
 	class QStav
 	{

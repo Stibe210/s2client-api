@@ -15,7 +15,8 @@ using namespace std;
 
 QL::QL(Stav* stav, int pocFeatur, int pocAkcii,QInit* qin)
 {
-
+   //x = (aX+c)mod m
+    lcgX = time(NULL);
     qInit = qin;
 	minulyStav = stav->Clone();
     zaciatocnyStav = stav->Clone();
@@ -60,12 +61,20 @@ void QL::SetHyperparemeters(float alpha, float gamma, float epsilon)
     EPSILON = epsilon;
 }
 
+double QL::VypocitajNahodneCislo() {
+    lcgX = (lcgA*lcgX + lcgC) % lcgM;
+    return lcgX;
+}
+
 //Nejako vybere akciu
 // povodne parameter Stav* stav,  momentalne berie aktualny stav 
 int QL::ChooseAction(bool vybratNajlepsie, Stav* stav)
 {
-
-    float nahoda = ((double)rand() / (RAND_MAX));
+    //double ra = time(NULL);
+    //double r = (double)rand();
+    double r = VypocitajNahodneCislo();
+    cout << "R: "<<r << endl;
+    double nahoda = r / ((double)lcgM);
     //cout << "NAHODA PREMENNA" << endl;
     //cout << nahoda << endl;
 	//mozno nejaka vazena nahoda podla hodnoty q

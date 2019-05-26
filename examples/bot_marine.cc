@@ -18,7 +18,7 @@ void LaunchGame(sc2::Coordinator coordinator)
 
 int main(int argc, char* argv[]) {
 
-    srand(time(NULL));
+    //srand(time(NULL));
     int pocetHier = 100;
     int pocetPokusov = 2;
     double alpha = 0.10;
